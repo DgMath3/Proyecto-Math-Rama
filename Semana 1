@@ -1,0 +1,101 @@
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
+
+public class SimuladorProtoboard extends Application {
+
+    private GridPane protoboard;
+    private ImageView vistaPreviaImagen;
+    private final int numFilas = 10;
+    private final int numColumnas = 30;
+    private final int espacio = 15;
+
+    @Override
+    public void start(Stage escenarioPrincipal) {
+        BorderPane root = new BorderPane();
+        protoboard = new GridPane();
+        root.setCenter(protoboard);
+
+        // Crear el protoboard de 10x30 con separación entre puntos
+        for (int i = 0; i < numFilas; i++) {
+            for (int j = 0; j < numColumnas; j++) {
+                Circle punto = new Circle(5, Color.LIGHTGRAY);
+                protoboard.add(punto, j, i);
+                GridPane.setMargin(punto, new javafx.geometry.Insets(espacio / 2.0));
+            }
+        }
+
+        // Crear un menú
+        MenuBar barraMenu = new MenuBar();
+        Menu menuComponentes = new Menu("Componentes");
+
+        // Crear un elemento de menú para el LED
+        MenuItem itemLed = new MenuItem("Agregar LED");
+        itemLed.setOnAction(e -> seleccionarComponente("LED"));
+        menuComponentes.getItems().add(itemLed);
+
+        // Agregar más elementos de menú para otros componentes
+        MenuItem itemResistor = new MenuItem("Agregar Resistor");
+        itemResistor.setOnAction(e -> seleccionarComponente("Resistor"));
+        menuComponentes.getItems().add(itemResistor);
+
+        // Agregar el menú de componentes al menú principal
+        barraMenu.getMenus().add(menuComponentes);
+        root.setTop(barraMenu);
+
+        Scene escena = new Scene(root, 800, 400);
+        escenarioPrincipal.setScene(escena);
+        escenarioPrincipal.setTitle("Simulador de Protoboard");
+        escenarioPrincipal.show();
+    }
+
+    private void seleccionarComponente(String tipoComponente) {
+        Image imagen;
+        switch (tipoComponente) {
+            case "LED":
+                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\scr\\resources\\led.jpg");
+                break;
+            case "Resistor":
+                imagen = new Image("https://i.imgur.com/QeMsd1c.png"); // Cambia esta URL por la de una imagen de resistor
+                break;
+            default:
+                return;
+        }
+
+        if (vistaPreviaImagen != null) {
+            protoboard.getChildren().remove(vistaPreviaImagen);
+        }
+
+        vistaPreviaImagen = new ImageView(imagen);
+        vistaPreviaImagen.setFitHeight(30);
+        vistaPreviaImagen.setFitWidth(15);
+
+        protoboard.setOnMouseMoved(e -> {
+            int columna = (int) (e.getX() / (protoboard.getWidth() / numColumnas));
+            int fila = (int) (e.getY() / (protoboard.getHeight() / numFilas));
+            GridPane.setColumnIndex(vistaPreviaImagen, columna);
+            GridPane.setRowIndex(vistaPreviaImagen, fila);
+            if (!protoboard.getChildren().contains(vistaPreviaImagen)) {
+                protoboard.getChildren().add(vistaPreviaImagen);
+            }
+        });
+
+        protoboard.setOnMouseClicked(e -> {
+            protoboard.setOnMouseMoved(null); // Detener el movimiento de la vista previa
+            vistaPreviaImagen = null; // Restablecer la vista previa de la imagen
+        });
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
