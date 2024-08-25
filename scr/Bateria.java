@@ -14,16 +14,20 @@ public class Bateria{
 
     public Bateria(){
         contenedorBateria = new VBox();
-        Image bateriaImagen = new Image("file:src/resources/bateria.png");
+        Image bateriaImagen = new Image("file:C:\\Users\\matia\\OneDrive\\Escritorio\\proyecto\\resources\\bateria.png"); 
 
-        ImageView bateriaImageView = new ImageView(bateriaImagen); // Envolver la imagen en un ImageView
+
+        ImageView bateriaImageView = new ImageView(bateriaImagen); 
+        bateriaImageView.setFitWidth(100); 
+        bateriaImageView.setPreserveRatio(true); 
         Button botonVerde = new Button("+");
         botonVerde.setStyle("-fx-background-color: green; -fx-text-fill: white;");
         Button botonRojo = new Button("-");
         botonRojo.setStyle("-fx-background-color: red; -fx-text-fill: white;");
 
 
-        contenedorBateria.getChildren().addAll(bateriaImageView, botonVerde, botonRojo); // Añadir ImageView en lugar de Image
+        contenedorBateria.getChildren().addAll(botonVerde,bateriaImageView,botonRojo);
+
     contenedorBateria.setAlignment(Pos.CENTER);
     contenedorBateria.setSpacing(10);
     contenedorBateria.setPadding(new Insets(10));
