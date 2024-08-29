@@ -42,6 +42,20 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Simulador de Protoboard");
 
+        // Configurar los botones de la batería
+        bateria.botonVerde.setOnAction(e -> {
+        loc.getFilaActual();
+        loc.getColumnaActual();
+        protoboard.cambiarColor(loc.getFilaActual(), loc.getColumnaActual(), Color.GREEN);
+        controlador.actualizarBuses(protoboard.getGridPane()); // Actualizar buses después de cambiar el color
+        });
+        bateria.botonRojo.setOnAction(e -> {
+        loc.getFilaActual();
+        loc.getColumnaActual();
+        protoboard.cambiarColor(loc.getFilaActual(), loc.getColumnaActual(), Color.RED);
+        controlador.actualizarBuses(protoboard.getGridPane()); // Actualizar buses después de cambiar el color
+        });
+
         // Configurar el Stage
         primaryStage.setResizable(false); // Desactiva el redimensionamiento de la ventana
         primaryStage.setFullScreen(false); // Asegura que el modo de pantalla completa está desactivado
