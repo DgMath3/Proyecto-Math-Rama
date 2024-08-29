@@ -19,6 +19,10 @@ public class Protoboard {
         configurarGridPane();
         crearProtoboard();
     }
+    public void cambiarColor(int fila, int columna, Color color) {
+        Circle punto = (Circle) gridPane.getChildren().get(fila * numColumnas + columna);
+        punto.setFill(color);
+    }
 
     private void configurarGridPane() {
         // Ajusta el tamaño del GridPane
