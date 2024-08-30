@@ -17,6 +17,7 @@ public class Main extends Application {
         Loc loc = new Loc(protoboard.getGridPane(), Color.BLACK, Color.GRAY, 1);
         Cablear cablear = new Cablear(protoboard.getGridPane(), loc);
         MenuBarra menuBarra = new MenuBarra(cablear);
+        Controlador controlador = new Controlador();
 
         // Cargar la imagen de fondo
         Image fondoImagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\fondo.png"); // Asegúrate de que la ruta sea correcta
@@ -48,12 +49,14 @@ public class Main extends Application {
         loc.getColumnaActual();
         protoboard.cambiarColor(loc.getFilaActual(), loc.getColumnaActual(), Color.GREEN);
         controlador.actualizarBuses(protoboard.getGridPane()); // Actualizar buses después de cambiar el color
+        controlador.ActualizarProtoboard(protoboard.getGridPane()); // Actualizar protoboard después de cambiar el color
         });
         bateria.botonRojo.setOnAction(e -> {
         loc.getFilaActual();
         loc.getColumnaActual();
         protoboard.cambiarColor(loc.getFilaActual(), loc.getColumnaActual(), Color.RED);
         controlador.actualizarBuses(protoboard.getGridPane()); // Actualizar buses después de cambiar el color
+        controlador.ActualizarProtoboard(protoboard.getGridPane()); // Actualizar protoboard después de cambiar el color
         });
 
         // Configurar el Stage
