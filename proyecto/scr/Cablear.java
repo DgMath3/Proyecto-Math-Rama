@@ -4,6 +4,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 public class Cablear {
     private final GridPane gridPane;
@@ -20,39 +22,45 @@ public class Cablear {
         this.drawingPane = new Pane();
         this.drawingPane.setMouseTransparent(true);
         this.gridPane.getChildren().add(drawingPane);
+        
+        // Asegurarse de que el tamaño del Pane de dibujo sea correcto
+        this.drawingPane.setPrefSize(gridPane.getWidth(), gridPane.getHeight());
 
-        Eventos();
+        configurarEventos();
     }
 
-    private void Eventos() {
-        gridPane.setOnMouseClicked(this::Click);
+    private void configurarEventos() {
+        gridPane.setOnMouseClicked(this::handleClick);
     }
 
-    private void Click(MouseEvent event) {
+    private void handleClick(MouseEvent event) {
         if (!cablearActivo || objetoSeleccionado == null) {
             return; // Si no está activo o no hay objeto seleccionado, no hacer nada
         }
 
-        int rowIndex = loc.getFilaActual();
-        int colIndex = loc.getColumnaActual();
+        // Esperar brevemente para asegurar que el GridPane se actualice
+        PauseTransition pause = new PauseTransition(Duration.millis(50));
+        pause.setOnFinished(e -> {
+            // Verificar si el clic está dentro del área del GridPane
+            if (event.getX() >= 0 && event.getX() <= gridPane.getWidth() &&
+                event.getY() >= 0 && event.getY() <= gridPane.getHeight()) {
 
-        if (rowIndex == -1 || colIndex == -1) return;
+                double clickX = event.getX();
+                double clickY = event.getY();
 
-        double cellWidth = gridPane.getWidth() / gridPane.getColumnConstraints().size();
-        double cellHeight = gridPane.getHeight() / gridPane.getRowConstraints().size();
-        double cellCenterX = colIndex * cellWidth + (cellWidth / 2);
-        double cellCenterY = rowIndex * cellHeight + (cellHeight / 2);
-
-        if (!drawing) {
-            startX = cellCenterX;
-            startY = cellCenterY;
-            drawing = true;
-        } else {
-            dibujarCable(startX, startY, cellCenterX, cellCenterY);
-            drawing = false;
-            cablearActivo = false; // Desactiva la funcionalidad de cablear después de dibujar
-            objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
-        }
+                if (!drawing) {
+                    startX = clickX - 5;
+                    startY = clickY - 11;
+                    drawing = true;
+                } else {
+                    dibujarCable(startX, startY, clickX - 6, clickY - 4);
+                    drawing = false;
+                    cablearActivo = false; // Desactiva la funcionalidad de cablear después de dibujar
+                    objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
+                }
+            }
+        });
+        pause.play();
     }
 
     private void dibujarCable(double startX, double startY, double endX, double endY) {
