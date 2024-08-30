@@ -9,8 +9,8 @@ import javafx.scene.layout.VBox;
 public class Bateria{
     private VBox contenedorBateria;
     public ImageView bateriaImagen;
-    private Button botonRojo;
-    private Button botonVerde;
+    public Button botonRojo;
+    public Button botonVerde;
 
     public Bateria(){
         contenedorBateria = new VBox();
