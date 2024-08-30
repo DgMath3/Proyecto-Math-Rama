@@ -10,13 +10,11 @@ public class Loc {
     private Circle[][] celdas;
     private int filaActual = -1;
     private int columnaActual = -1;
-    private final double margenError; // Margen de error
 
-    public Loc(GridPane gridPane, Color colorResaltado, Color colorDefecto, double margenError) {
+    public Loc(GridPane gridPane, Color colorResaltado, Color colorDefecto) {
         this.gridPane = gridPane;
         this.colorResaltado = colorResaltado;
         this.colorDefecto = colorDefecto;
-        this.margenError = margenError; // Inicializa el margen de error
         inicializarCeldas();
         configurarEventos();
     }
@@ -26,11 +24,15 @@ public class Loc {
         int columnas = gridPane.getColumnConstraints().size();
         celdas = new Circle[filas][columnas];
 
+        double cellWidth = gridPane.getWidth() / columnas;
+        double cellHeight = gridPane.getHeight() / filas;
+
         for (int fila = 0; fila < filas; fila++) {
             for (int columna = 0; columna < columnas; columna++) {
                 Circle celda = new Circle(10, colorDefecto); // Ajusta el radio según sea necesario
-                celda.setTranslateX(columna * (gridPane.getWidth() / columnas) + (gridPane.getWidth() / (2 * columnas)));
-                celda.setTranslateY(fila * (gridPane.getHeight() / filas) + (gridPane.getHeight() / (2 * filas)));
+                // Posicionar el círculo en el centro de la celda
+                celda.setTranslateX(columna * cellWidth + cellWidth / 2);
+                celda.setTranslateY(fila * cellHeight + cellHeight / 2);
                 gridPane.add(celda, columna, fila);
                 celdas[fila][columna] = celda;
             }
@@ -42,33 +44,29 @@ public class Loc {
     }
 
     private void manejarMovimientoMouse(MouseEvent evento) {
-        double alturaCelda = gridPane.getHeight() / celdas.length;
-        double anchoCelda = gridPane.getWidth() / celdas[0].length;
+        // Tamaño de cada celda en píxeles
+        double cellWidth = gridPane.getWidth() / gridPane.getColumnConstraints().size();
+        double cellHeight = gridPane.getHeight() / gridPane.getRowConstraints().size();
+        int indiceFila = (int) (evento.getY() / cellHeight);
+        int indiceColumna = (int) (evento.getX() / cellWidth);
 
-        // Ajustar los índices para tener en cuenta el margen de error
-        double x = evento.getX() - margenError;
-        double y = evento.getY() - margenError;
-
-        // Asegúrate de que los valores x y y no sean negativos
-        x = Math.max(x, 0);
-        y = Math.max(y, 0);
-
-        int indiceFila = (int) (y / alturaCelda);
-        int indiceColumna = (int) (x / anchoCelda);
-
-        // Restablece todos los colores a colorDefecto
+        // Restablecer el color de todas las celdas
         for (int f = 0; f < celdas.length; f++) {
             for (int c = 0; c < celdas[f].length; c++) {
-                celdas[f][c].setFill(colorDefecto);
+                if (celdas[f][c] != null) {
+                    celdas[f][c].setFill(colorDefecto);
+                }
             }
         }
 
-        // Cambia el color de la celda resaltada si está dentro del rango
+        // Resaltar la celda actual
         if (indiceFila >= 0 && indiceFila < celdas.length &&
             indiceColumna >= 0 && indiceColumna < celdas[0].length) {
-            celdas[indiceFila][indiceColumna].setFill(colorResaltado);
-            filaActual = indiceFila;
-            columnaActual = indiceColumna;
+            if (celdas[indiceFila][indiceColumna] != null) {
+                celdas[indiceFila][indiceColumna].setFill(colorResaltado);
+                filaActual = indiceFila;
+                columnaActual = indiceColumna;
+            }
         }
     }
 
