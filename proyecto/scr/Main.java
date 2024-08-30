@@ -14,7 +14,7 @@ public class Main extends Application {
         // Crear los componentes
         Protoboard protoboard = new Protoboard();
         Bateria bateria = new Bateria();
-        Loc loc = new Loc(protoboard.getGridPane(), Color.BLACK, Color.GRAY, 1);
+        Loc loc = new Loc(protoboard.getGridPane(), Color.BLACK, null);
         Cablear cablear = new Cablear(protoboard.getGridPane(), loc);
         MenuBarra menuBarra = new MenuBarra(cablear);
         Controlador controlador = new Controlador();
