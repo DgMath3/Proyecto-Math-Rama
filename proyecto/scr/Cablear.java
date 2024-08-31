@@ -1,4 +1,5 @@
-import javafx.scene.image.ImageView;
+import javafx.scene.image.ImageView; // Asegúrate de importar ImageView
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -24,7 +25,7 @@ public class Cablear {
         this.gridPane = gridPane;
         this.loc = loc;
         this.drawingPane = new Pane();
-        this.drawingPane.setMouseTransparent(true);
+        this.drawingPane.setMouseTransparent(false);
         this.gridPane.getChildren().add(drawingPane);
 
         // Inicializar la lista de cables
@@ -37,17 +38,18 @@ public class Cablear {
     }
 
     private void configurarEventos() {
-        gridPane.setOnMouseClicked(this::manejarClick);
+        gridPane.setOnMouseClicked(this::handleClick);
+        drawingPane.addEventFilter(MouseEvent.MOUSE_CLICKED, this::handleMouseClickOnPane);
     }
 
-    private void manejarClick(MouseEvent event) {
+    private void handleClick(MouseEvent event) {
         if (!cablearActivo || objetoSeleccionado == null) {
             return; // Si no está activo o no hay objeto seleccionado, no hace nada
         }
 
         // Esperar brevemente para asegurar que el GridPane se actualice
-        PauseTransition pausa = new PauseTransition(Duration.millis(50));
-        pausa.setOnFinished(e -> {
+        PauseTransition pause = new PauseTransition(Duration.millis(50));
+        pause.setOnFinished(e -> {
             // Verificar si el clic está dentro del área del GridPane
             if (event.getX() >= 0 && event.getX() <= gridPane.getWidth() &&
                 event.getY() >= 0 && event.getY() <= gridPane.getHeight()) {
@@ -67,18 +69,20 @@ public class Cablear {
                 }
             }
         });
-        pausa.play();
+        pause.play();
     }
 
     private void dibujarCable(double startX, double startY, double endX, double endY) {
         Paint color = objetoSeleccionado != null ? objetoSeleccionado.getColor() : Color.BLACK;
         ImageView imageView = objetoSeleccionado != null ? new ImageView(objetoSeleccionado.getImagen()) : null;
-
+        
         // Crear y agregar el cable a la lista
-        Cable cable = new Cable(startX, startY, endX, endY, color, imageView, this);
+        Cable cable = new Cable(startX, startY, endX, endY, color, imageView);
         cables.add(cable);
 
         drawingPane.getChildren().add(cable.getLinea());
+        cable.getLinea().toFront();
+
         if (imageView != null) {
             double cellSize = gridPane.getWidth() / gridPane.getColumnConstraints().size();
             imageView.setFitWidth(cellSize);
@@ -88,6 +92,23 @@ public class Cablear {
             imageView.setLayoutY((startY + endY) / 2 - imageView.getFitHeight() / 2);
 
             drawingPane.getChildren().add(imageView);
+            imageView.toFront();
+        }
+    }
+
+    private void handleMouseClickOnPane(MouseEvent event) {
+        if (event.getButton() == MouseButton.SECONDARY) { // Detecta clic derecho
+            Cable cableToRemove = null;
+            for (Cable cable : cables) {
+                if (cable.getLinea().contains(event.getX(), event.getY())) {
+                    cableToRemove = cable;
+                    break;
+                }
+            }
+            if (cableToRemove != null) {
+                eliminarCable(cableToRemove);
+                event.consume(); // Evita que el evento se propague
+            }
         }
     }
 
