@@ -3,9 +3,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Line;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Cablear {
     private final GridPane gridPane;
@@ -14,7 +17,8 @@ public class Cablear {
     private double startX, startY;
     private boolean drawing = false;
     private boolean cablearActivo = false;
-    private Objeto objetoSeleccionado = null; // Objeto seleccionado para el color
+    private Objeto objetoSeleccionado = null;
+    private List<Cable> cables; // Lista para almacenar los cables
 
     public Cablear(GridPane gridPane, Loc loc) {
         this.gridPane = gridPane;
@@ -22,7 +26,10 @@ public class Cablear {
         this.drawingPane = new Pane();
         this.drawingPane.setMouseTransparent(true);
         this.gridPane.getChildren().add(drawingPane);
-        
+
+        // Inicializar la lista de cables
+        this.cables = new ArrayList<>();
+
         // Asegurarse de que el tamaño del Pane de dibujo sea correcto
         this.drawingPane.setPrefSize(gridPane.getWidth(), gridPane.getHeight());
 
@@ -30,17 +37,17 @@ public class Cablear {
     }
 
     private void configurarEventos() {
-        gridPane.setOnMouseClicked(this::handleClick);
+        gridPane.setOnMouseClicked(this::manejarClick);
     }
 
-    private void handleClick(MouseEvent event) {
+    private void manejarClick(MouseEvent event) {
         if (!cablearActivo || objetoSeleccionado == null) {
-            return; // Si no está activo o no hay objeto seleccionado, no hacer nada
+            return; // Si no está activo o no hay objeto seleccionado, no hace nada
         }
 
         // Esperar brevemente para asegurar que el GridPane se actualice
-        PauseTransition pause = new PauseTransition(Duration.millis(50));
-        pause.setOnFinished(e -> {
+        PauseTransition pausa = new PauseTransition(Duration.millis(50));
+        pausa.setOnFinished(e -> {
             // Verificar si el clic está dentro del área del GridPane
             if (event.getX() >= 0 && event.getX() <= gridPane.getWidth() &&
                 event.getY() >= 0 && event.getY() <= gridPane.getHeight()) {
@@ -60,22 +67,19 @@ public class Cablear {
                 }
             }
         });
-        pause.play();
+        pausa.play();
     }
 
     private void dibujarCable(double startX, double startY, double endX, double endY) {
-        Line linea = new Line(startX, startY, endX, endY);
-        if (objetoSeleccionado != null) {
-            linea.setStroke(objetoSeleccionado.getColor()); // Usar el color del objeto
-        } else {
-            linea.setStroke(Color.BLACK); // Color por defecto si no hay objeto seleccionado
-        }
-        linea.setStrokeWidth(2);
+        Paint color = objetoSeleccionado != null ? objetoSeleccionado.getColor() : Color.BLACK;
+        ImageView imageView = objetoSeleccionado != null ? new ImageView(objetoSeleccionado.getImagen()) : null;
 
-        drawingPane.getChildren().add(linea);
+        // Crear y agregar el cable a la lista
+        Cable cable = new Cable(startX, startY, endX, endY, color, imageView, this);
+        cables.add(cable);
 
-        if (objetoSeleccionado != null && objetoSeleccionado.getImagen() != null) {
-            ImageView imageView = new ImageView(objetoSeleccionado.getImagen());
+        drawingPane.getChildren().add(cable.getLinea());
+        if (imageView != null) {
             double cellSize = gridPane.getWidth() / gridPane.getColumnConstraints().size();
             imageView.setFitWidth(cellSize);
             imageView.setFitHeight(cellSize);
@@ -94,5 +98,26 @@ public class Cablear {
     public void setObjetoSeleccionado(Objeto objeto) {
         this.objetoSeleccionado = objeto;
         this.cablearActivo = true; // Activar la funcionalidad de cablear al seleccionar un objeto
+    }
+
+    // Método para eliminar un cable
+    public void eliminarCable(Cable cable) {
+        drawingPane.getChildren().remove(cable.getLinea());
+        if (cable.getImageView() != null) {
+            drawingPane.getChildren().remove(cable.getImageView());
+        }
+        cables.remove(cable);
+    }
+
+    // Método para eliminar todos los cables
+    public void eliminarTodosLosCables() {
+        for (Cable cable : cables) {
+            eliminarCable(cable);
+        }
+    }
+
+    // Método para obtener la lista de cables
+    public List<Cable> getCables() {
+        return cables;
     }
 }
