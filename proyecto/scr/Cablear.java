@@ -5,7 +5,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.Line;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ public class Cablear {
         configurarEventos();
     }
 
-    private void configurarEventos() {
+    public void configurarEventos() {
         gridPane.setOnMouseClicked(this::handleClick);
         drawingPane.addEventFilter(MouseEvent.MOUSE_CLICKED, this::handleMouseClickOnPane);
     }
@@ -50,9 +49,8 @@ public class Cablear {
         // Esperar brevemente para asegurar que el GridPane se actualice
         PauseTransition pause = new PauseTransition(Duration.millis(50));
         pause.setOnFinished(e -> {
-            // Verificar si el clic está dentro del área del GridPane
-            if (event.getX() >= 0 && event.getX() <= gridPane.getWidth() &&
-                event.getY() >= 0 && event.getY() <= gridPane.getHeight()) {
+            // Usar el método de Loc para verificar si el clic está dentro del GridPane
+            if (loc.estaDentroDelGridPane(event.getX(), event.getY())) {
 
                 double clickX = event.getX();
                 double clickY = event.getY();

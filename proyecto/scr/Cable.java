@@ -10,7 +10,7 @@ public class Cable {
     public Cable(double startX, double startY, double endX, double endY, Paint color, ImageView imageView) {
         this.linea = new Line(startX, startY, endX, endY);
         this.linea.setStroke(color);
-        this.linea.setStrokeWidth(4); // Ajusta el grosor aquí
+        this.linea.setStrokeWidth(6); // Ajusta el grosor aquí
 
         this.imageView = imageView;
 

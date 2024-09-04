@@ -5,81 +5,63 @@ import javafx.scene.shape.Circle;
 public class Controlador {
 
     public void actualizarBuses(GridPane gridPane) {
-        // Implementación del método actualizarBuses
         for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 30; j++) {
-                Circle punto = (Circle) gridPane.getChildren().get(i * 30 + j);
-                if (punto.getFill() == Color.GREEN) {
-                    for (int k = 0; k < 30; k++) {
-                        Circle puntoBus = (Circle) gridPane.getChildren().get(i * 30 + k);
-                        puntoBus.setFill(Color.GREEN);
-                    }
-                }
-            }
+            actualizarFilaBus(gridPane, i, Color.GREEN);
+            actualizarFilaBus(gridPane, i, Color.RED);
         }
         for (int i = 12; i < 14; i++) {
-            for (int j = 0; j < 30; j++) {
-                Circle punto = (Circle) gridPane.getChildren().get(i * 30 + j);
-                if (punto.getFill() == Color.GREEN) {
-                    for (int k = 0; k < 30; k++) {
-                        Circle puntoBus = (Circle) gridPane.getChildren().get(i * 30 + k);
-                        puntoBus.setFill(Color.GREEN);
+            actualizarFilaBus(gridPane, i, Color.GREEN);
+            actualizarFilaBus(gridPane, i, Color.RED);
+        }
+    }
+
+    private void actualizarFilaBus(GridPane gridPane, int fila, Color color) {
+        int numColumns = gridPane.getColumnConstraints().size(); // Obtén el número de columnas
+        for (int j = 0; j < numColumns; j++) {
+            int index = fila * numColumns + j;
+            if (index < gridPane.getChildren().size()) { // Verifica si el índice es válido
+                Circle punto = (Circle) gridPane.getChildren().get(index);
+                if (punto.getFill() == color) {
+                    for (int k = 0; k < numColumns; k++) {
+                        int indexBus = fila * numColumns + k;
+                        if (indexBus < gridPane.getChildren().size()) { // Verifica si el índice es válido
+                            Circle puntoBus = (Circle) gridPane.getChildren().get(indexBus);
+                            puntoBus.setFill(color);
+                        }
                     }
+                    break; // Rompe el bucle una vez que encuentras un punto con el color correcto
                 }
             }
         }
     }
+
     public void ActualizarProtoboard(GridPane gridPane) {
-        // Actualizar filas del 2 al 6
         for (int i = 2; i < 7; i++) {
-            for (int j = 0; j < 30; j++) {
-                Circle punto = (Circle) gridPane.getChildren().get(i * 30 + j);
-                if (punto.getFill() == Color.GREEN) {
-                    for (int m = 2; m < 7; m++) {
-                        Circle punto2 = (Circle) gridPane.getChildren().get(m * 30 + j);
-                        punto2.setFill(Color.GREEN);
-                    }
-                }
-            }
+            actualizarFila(gridPane, i, Color.GREEN);
+            actualizarFila(gridPane, i, Color.RED);
         }
-        
-        // Actualizar filas del 7 al 12
         for (int i = 7; i < 12; i++) {
-            for (int j = 0; j < 30; j++) {
-                Circle punto = (Circle) gridPane.getChildren().get(i * 30 + j);
-                if (punto.getFill() == Color.GREEN) {
-                    for (int m = 7; m < 12; m++) {
-                        Circle punto2 = (Circle) gridPane.getChildren().get(m * 30 + j);
-                        punto2.setFill(Color.GREEN);
-                    }
-                }
-            }
+            actualizarFila(gridPane, i, Color.GREEN);
+            actualizarFila(gridPane, i, Color.RED);
         }
-        // Actualizar filas del 2 al 6
-        for (int i = 2; i < 7; i++) {
-            for (int j = 0; j < 30; j++) {
-                Circle punto = (Circle) gridPane.getChildren().get(i * 30 + j);
-                if (punto.getFill() == Color.RED) {
-                    for (int m = 2; m < 7; m++) {
-                        Circle punto2 = (Circle) gridPane.getChildren().get(m * 30 + j);
-                        punto2.setFill(Color.RED);
-                    }
-                }
-            }
-        }
-        
-        // Actualizar filas del 7 al 12
-        for (int i = 7; i < 12; i++) {
-            for (int j = 0; j < 30; j++) {
-                Circle punto = (Circle) gridPane.getChildren().get(i * 30 + j);
-                if (punto.getFill() == Color.RED) {
-                    for (int m = 7; m < 12; m++) {
-                        Circle punto2 = (Circle) gridPane.getChildren().get(m * 30 + j);
-                        punto2.setFill(Color.RED);
+    }
+
+    private void actualizarFila(GridPane gridPane, int fila, Color color) {
+        int numColumns = gridPane.getColumnConstraints().size(); // Obtén el número de columnas
+        for (int j = 0; j < numColumns; j++) {
+            int index = fila * numColumns + j;
+            if (index < gridPane.getChildren().size()) { // Verifica si el índice es válido
+                Circle punto = (Circle) gridPane.getChildren().get(index);
+                if (punto.getFill() == color) {
+                    for (int m = (fila < 7 ? 2 : 7); m < (fila < 7 ? 7 : 12); m++) {
+                        int index2 = m * numColumns + j;
+                        if (index2 < gridPane.getChildren().size()) { // Verifica si el índice es válido
+                            Circle punto2 = (Circle) gridPane.getChildren().get(index2);
+                            punto2.setFill(color);
+                        }
                     }
                 }
             }
         }
     }
 }
-

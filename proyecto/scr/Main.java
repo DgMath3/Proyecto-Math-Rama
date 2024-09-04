@@ -13,21 +13,21 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         // Crear los componentes principales
         Protoboard protoboard = new Protoboard();
-        Bateria bateria = new Bateria();
-        Loc loc = new Loc(protoboard.getGridPane(), Color.BLACK, null);
-
+        
         // Crear la escena
         StackPane root = new StackPane();
         Scene scene = new Scene(root, 1200, 800); // Ajusta el tamaño según tus necesidades
         
-        // Crear la instancia de Cablear con la escena
+        // Crear la instancia de Cablear con el Protoboard y el Loc
+        Loc loc = new Loc(protoboard.getGridPane(), Color.BLACK, null);
         Cablear cablear = new Cablear(protoboard.getGridPane(), loc);
         
         // Crear la barra de menú con la instancia de Cablear
         MenuBarra menuBarra = new MenuBarra(cablear);
-        
+
         // Crear el controlador
         Controlador controlador = new Controlador();
+        Bateria bateria = new Bateria(loc,protoboard,controlador, protoboard.getGridPane());
 
         // Crear la imagen de fondo
         Image fondoImagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\fondo.png");
@@ -58,22 +58,6 @@ public class Main extends Application {
 
         // Añadir el VBox al StackPane raíz
         root.getChildren().add(mainLayout);
-
-        // Configurar los botones de la batería
-        bateria.botonVerde.setOnAction(e -> {
-            loc.getFilaActual();
-            loc.getColumnaActual();
-            protoboard.cambiarColor(loc.getFilaActual(), loc.getColumnaActual(), Color.GREEN);
-            controlador.actualizarBuses(protoboard.getGridPane()); // Actualizar buses después de cambiar el color
-            controlador.ActualizarProtoboard(protoboard.getGridPane()); // Actualizar protoboard después de cambiar el color
-        });
-        bateria.botonRojo.setOnAction(e -> {
-            loc.getFilaActual();
-            loc.getColumnaActual();
-            protoboard.cambiarColor(loc.getFilaActual(), loc.getColumnaActual(), Color.RED);
-            controlador.actualizarBuses(protoboard.getGridPane()); // Actualizar buses después de cambiar el color
-            controlador.ActualizarProtoboard(protoboard.getGridPane()); // Actualizar protoboard después de cambiar el color
-        });
 
         // Configurar el Stage
         primaryStage.setTitle("Simulador de Protoboard");

@@ -5,6 +5,7 @@ import javafx.scene.control.MenuItem;
 public class MenuBarra {
     private final MenuBar menuBar;
     private final Cablear cablear;
+    private Runnable onObjetoSeleccionado;
 
     public MenuBarra(Cablear cablear) {
         this.cablear = cablear;
@@ -21,14 +22,23 @@ public class MenuBarra {
         MenuItem led = new MenuItem("Led");
         led.setOnAction(e -> seleccionarObjeto("Led"));
 
-        menuAgregar.getItems().addAll(cable_r,cable_b, led);
-
+        menuAgregar.getItems().addAll(cable_r, cable_b, led);
         menuBar.getMenus().add(menuAgregar);
     }
 
     private void seleccionarObjeto(String idObjeto) {
         Objeto objeto = new Objeto(idObjeto); // Crear un objeto con el id seleccionado
         cablear.setObjetoSeleccionado(objeto); // Establecer el objeto seleccionado en Cablear
+
+        cablear.configurarEventos();
+
+        if (onObjetoSeleccionado != null) {
+            onObjetoSeleccionado.run(); // Ejecutar el callback si está definido
+        }
+    }
+
+    public void setOnObjetoSeleccionado(Runnable onObjetoSeleccionado) {
+        this.onObjetoSeleccionado = onObjetoSeleccionado;
     }
 
     public MenuBar getMenuBar() {
