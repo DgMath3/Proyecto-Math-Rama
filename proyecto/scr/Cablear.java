@@ -9,6 +9,8 @@ import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 
 public class Cablear {
     private final GridPane gridPane;
@@ -73,25 +75,72 @@ public class Cablear {
     private void dibujarCable(double startX, double startY, double endX, double endY) {
         Paint color = objetoSeleccionado != null ? objetoSeleccionado.getColor() : Color.BLACK;
         ImageView imageView = objetoSeleccionado != null ? new ImageView(objetoSeleccionado.getImagen()) : null;
-        
-        // Crear y agregar el cable a la lista
+    
+        // Crear el cable con la información proporcionada
         Cable cable = new Cable(startX, startY, endX, endY, color, imageView);
-        cables.add(cable);
-
-        drawingPane.getChildren().add(cable.getLinea());
-        cable.getLinea().toFront();
-
-        if (imageView != null) {
-            double cellSize = gridPane.getWidth() / gridPane.getColumnConstraints().size();
-            imageView.setFitWidth(cellSize);
-            imageView.setFitHeight(cellSize);
-
-            imageView.setLayoutX((startX + endX) / 2 - imageView.getFitWidth() / 2);
-            imageView.setLayoutY((startY + endY) / 2 - imageView.getFitHeight() / 2);
-
-            drawingPane.getChildren().add(imageView);
-            imageView.toFront();
+    
+        // Verifica si el objeto seleccionado es un LED y su posición es válida
+        if ("Led".equals(objetoSeleccionado.getId())) {
+            if (verificarPosicionLED(startX, startY, endX, endY)) {
+                cables.add(cable);
+                drawingPane.getChildren().add(cable.getLinea());
+                cable.getLinea().toFront();
+    
+                if (imageView != null) {
+                    double cellSize = gridPane.getWidth() / gridPane.getColumnConstraints().size();
+                    imageView.setFitWidth(cellSize);
+                    imageView.setFitHeight(cellSize);
+    
+                    imageView.setLayoutX((startX + endX) / 2 - imageView.getFitWidth() / 2);
+                    imageView.setLayoutY((startY + endY) / 2 - imageView.getFitHeight() / 2);
+    
+                    drawingPane.getChildren().add(imageView);
+                    imageView.toFront();
+                }
+            } else {
+                // Si la posición del LED no es válida, eliminar el cable y mostrar un mensaje de error
+                Platform.runLater(() -> {
+                    Alert alerta = new Alert(AlertType.ERROR);
+                    alerta.setTitle("Error");
+                    alerta.setHeaderText("Error al colocar el LED");
+                    alerta.setContentText("El LED no se puede colocar en la posición seleccionada. Verifique que esté dentro de un cable válido.");
+                    alerta.showAndWait();
+                });
+    
+                // Limpiar el estado de dibujo y seleccionar el objeto
+                drawing = false;
+                cablearActivo = false;
+                objetoSeleccionado = null;
+            }
+        } else {
+            cables.add(cable);
+            drawingPane.getChildren().add(cable.getLinea());
+            cable.getLinea().toFront();
+    
+            if (imageView != null) {
+                double cellSize = gridPane.getWidth() / gridPane.getColumnConstraints().size();
+                imageView.setFitWidth(cellSize);
+                imageView.setFitHeight(cellSize);
+    
+                imageView.setLayoutX((startX + endX) / 2 - imageView.getFitWidth() / 2);
+                imageView.setLayoutY((startY + endY) / 2 - imageView.getFitHeight() / 2);
+    
+                drawingPane.getChildren().add(imageView);
+                imageView.toFront();
+            }
         }
+    }
+    
+    private boolean verificarPosicionLED(double startX, double startY, double endX, double endY) {
+        // Verifica la distancia máxima permitida entre los puntos de cable
+        double diferenciaX = Math.abs(endX - startX);
+        double diferenciaY = Math.abs(endY - startY);
+    
+        // Calcula la distancia en términos de celdas del protoboard
+        int distanciaCelulasX = (int) Math.round(diferenciaX / (gridPane.getWidth() / gridPane.getColumnConstraints().size()));
+        int distanciaCelulasY = (int) Math.round(diferenciaY / (gridPane.getHeight() / gridPane.getRowConstraints().size()));
+    
+        return distanciaCelulasX <= 2 && distanciaCelulasY <= 2;
     }
 
     private void handleMouseClickOnPane(MouseEvent event) {
