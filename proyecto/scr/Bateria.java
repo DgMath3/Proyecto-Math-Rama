@@ -68,6 +68,7 @@ public class Bateria {
             controlador.actualizarBuses(protoboard.getGridPane());
             controlador.ActualizarProtoboard(protoboard.getGridPane());
             System.out.println("Color aplicado.");
+            protoboard.actualizarMatriz(gridPane);
         } else {
             System.out.println("No se ha seleccionado una celda válida.");
         }
