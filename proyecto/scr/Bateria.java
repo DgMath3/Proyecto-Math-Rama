@@ -26,7 +26,7 @@ public class Bateria {
         this.gridPane = gridPane;
 
         contenedorBateria = new VBox();
-        bateriaImagen = new ImageView(new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\bateria.png")); 
+        bateriaImagen = new ImageView(new Image("file:C:\\Users\\matia\\OneDrive\\Escritorio\\proyecto\\resources\\bateria.png")); 
         bateriaImagen.setFitWidth(100); 
         bateriaImagen.setPreserveRatio(true); 
         

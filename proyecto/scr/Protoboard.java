@@ -1,6 +1,5 @@
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
@@ -14,11 +13,13 @@ public class Protoboard {
     private final int numFilas = 14;
     private final int numColumnas = 30;
     private final double espacio = 15.0;
+    private char[][] matriz;
 
     public Protoboard() {
         gridPane = new GridPane();
         configurarGridPane();
         crearProtoboard();
+        matriz = new char[numFilas][numColumnas];
     }
 
     public void cambiarColor(int fila, int columna, Color color) {
@@ -110,9 +111,58 @@ public class Protoboard {
         return gridPane;
     }
 
-    public void agregarObjeto(String tipo) {
-        Button nuevoObjeto = new Button(tipo);
-        nuevoObjeto.setOnAction(e -> System.out.println("Objeto " + tipo + " agregado"));
-        gridPane.add(nuevoObjeto, 0, 0);
+    // Constructor con GridPane como argumento
+    public void MatrizDeEnergia(GridPane gridPane) {
+        this.matriz = new char[numFilas][numColumnas];
+        actualizarMatriz(gridPane); // Inicializa la matriz con el estado del GridPane
+    }
+
+    // Método para actualizar la matriz según el color de los puntos del GridPane
+    public void actualizarMatriz(GridPane gridPane) {
+        if (matriz == null) {
+            System.out.println("Error: la matriz no está inicializada.");
+            return;
+        }
+        for (int i = 0; i < numFilas; i++) {
+            for (int j = 0; j < numColumnas; j++) {
+                Node node = obtenerhoyito(gridPane, i, j);
+                if (node != null && node instanceof Circle) { // Asegurarse de que no sea null y sea un Circle
+                    Circle punto = (Circle) node;
+                    Color color = (Color) punto.getFill(); // Cambié de Label a Circle ya que los nodos son círculos
+                    if (color.equals(Color.GREEN)) {
+                        matriz[i][j] = '+'; // Verde
+                    } else if (color.equals(Color.RED)) {
+                        matriz[i][j] = '-'; // Rojo
+                    } else {
+                        matriz[i][j] = '|'; // Neutro
+                    }
+                } else {
+                    matriz[i][j] = ' '; // Espacio en blanco si no hay nodo
+                }
+            }
+        }
+        imprimirMatriz(); // Imprime la matriz en la consola
+    }
+    
+
+    private Node obtenerhoyito(GridPane gridPane, int row, int column) {
+        for (Node nodo : gridPane.getChildren()) {
+            Integer nodofila = GridPane.getRowIndex(nodo);
+            Integer nodocolumna = GridPane.getColumnIndex(nodo);
+            if (nodofila != null && nodofila == row && nodocolumna != null && nodocolumna == column) {
+                return nodo;
+            }
+        }
+        return null;
+    }
+
+    // Método para imprimir la matriz
+    public void imprimirMatriz() {
+        for (int i = 0; i < numFilas; i++) {
+            for (int j = 0; j < numColumnas; j++) {
+                System.out.print(matriz[i][j] + " ");
+            }
+            System.out.println();
+        }
     }
 }
