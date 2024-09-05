@@ -18,7 +18,6 @@ public class Bateria {
     private Controlador controlador;
     private Color colorEsperado;
     private GridPane gridPane;
-    
 
     public Bateria(Loc loc, Protoboard protoboard, Controlador controlador, GridPane gridPane) {
         this.loc = loc;
@@ -68,10 +67,6 @@ public class Bateria {
             protoboard.cambiarColor(fila, columna, colorEsperado);
             controlador.actualizarBuses(protoboard.getGridPane());
             controlador.ActualizarProtoboard(protoboard.getGridPane());
-            protoboard.actualizarMatriz(gridPane);
-
-
-
             System.out.println("Color aplicado.");
         } else {
             System.out.println("No se ha seleccionado una celda válida.");

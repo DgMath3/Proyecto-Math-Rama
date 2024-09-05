@@ -41,6 +41,7 @@ public class Loc {
 
     private void configurarEventos() {
         gridPane.setOnMouseMoved(this::manejarMovimientoMouse);
+        gridPane.setOnMouseExited(this::manejarSalidaMouse);
     }
 
     private void manejarMovimientoMouse(MouseEvent evento) {
@@ -51,13 +52,7 @@ public class Loc {
         int indiceColumna = (int) (evento.getX() / cellWidth);
 
         // Restablecer el color de todas las celdas
-        for (int f = 0; f < celdas.length; f++) {
-            for (int c = 0; c < celdas[f].length; c++) {
-                if (celdas[f][c] != null) {
-                    celdas[f][c].setFill(colorDefecto);
-                }
-            }
-        }
+        restablecerColores();
 
         // Resaltar la celda actual
         if (indiceFila >= 0 && indiceFila < celdas.length &&
@@ -70,11 +65,32 @@ public class Loc {
         }
     }
 
+    private void manejarSalidaMouse(MouseEvent evento) {
+        restablecerColores(); // Restablecer todos los colores cuando el mouse salga del GridPane
+        filaActual = -1;
+        columnaActual = -1;
+    }
+
+    private void restablecerColores() {
+        for (int f = 0; f < celdas.length; f++) {
+            for (int c = 0; c < celdas[f].length; c++) {
+                if (celdas[f][c] != null) {
+                    celdas[f][c].setFill(colorDefecto);
+                }
+            }
+        }
+    }
+
     public int getFilaActual() {
         return filaActual;
     }
 
     public int getColumnaActual() {
         return columnaActual;
+    }
+
+    public boolean estaDentroDelGridPane(double x, double y) {
+        return x >= 0 && x <= gridPane.getWidth() &&
+               y >= 0 && y <= gridPane.getHeight();
     }
 }
