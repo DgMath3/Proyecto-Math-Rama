@@ -22,7 +22,10 @@ public class MenuBarra {
         MenuItem led = new MenuItem("Led");
         led.setOnAction(e -> seleccionarObjeto("Led"));
 
-        menuAgregar.getItems().addAll(cable_r, cable_b, led);
+        MenuItem siwtch = new MenuItem("Switch");
+        siwtch.setOnAction(e -> seleccionarObjeto("Switch"));
+
+        menuAgregar.getItems().addAll(cable_r, cable_b, led, siwtch);
         menuBar.getMenus().add(menuAgregar);
     }
 
@@ -33,7 +36,7 @@ public class MenuBarra {
         cablear.configurarEventos();
 
         if (onObjetoSeleccionado != null) {
-            onObjetoSeleccionado.run(); // Ejecutar el callback si está definido
+            onObjetoSeleccionado.run();
         }
     }
 

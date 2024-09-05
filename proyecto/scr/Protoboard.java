@@ -111,11 +111,6 @@ public class Protoboard {
         return gridPane;
     }
 
-    // Constructor con GridPane como argumento
-    public void MatrizDeEnergia(GridPane gridPane) {
-        this.matriz = new char[numFilas][numColumnas];
-        actualizarMatriz(gridPane); // Inicializa la matriz con el estado del GridPane
-    }
 
     // Método para actualizar la matriz según el color de los puntos del GridPane
     public void actualizarMatriz(GridPane gridPane) {
