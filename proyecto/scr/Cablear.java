@@ -130,19 +130,21 @@ public class Cablear {
     }
 
     public Boolean dibujarCable(double startX, double startY, double endX, double endY, int fila, int columna) {
-        // Comprobar si el cable está siendo dibujado en el mismo punto
-        if (startX == endX && startY == endY) {
-            System.err.println("Error: El cable no puede ser dibujado en el mismo punto.");
-            return false; // No se dibuja el cable
-        }
-    
-        // Calcular las posiciones de inicio y fin en la matriz de conexiones
-        int filaInicio = (int) (startY / (gridPane.getHeight() / gridPane.getRowConstraints().size()));
-        int columnaInicio = (int) (startX / (gridPane.getWidth() / gridPane.getColumnConstraints().size()));
-        int filaFin = (int) (endY / (gridPane.getHeight() / gridPane.getRowConstraints().size()));
-        int columnaFin = (int) (endX / (gridPane.getWidth() / gridPane.getColumnConstraints().size()));
-    
-        // Comprobar si ya existe un cable en la posición de inicio o fin
+    // Comprobar si el cable está siendo dibujado en el mismo punto
+    if (startX == endX && startY == endY) {
+        System.err.println("Error: El cable no puede ser dibujado en el mismo punto.");
+        return false; // No se dibuja el cable
+    }
+
+    // Calcular las posiciones de inicio y fin en la matriz de conexiones
+    int filaInicio = (int) (startY / (gridPane.getHeight() / gridPane.getRowConstraints().size()));
+    int columnaInicio = (int) (startX / (gridPane.getWidth() / gridPane.getColumnConstraints().size()));
+    int filaFin = (int) (endY / (gridPane.getHeight() / gridPane.getRowConstraints().size()));
+    int columnaFin = (int) (endX / (gridPane.getWidth() / gridPane.getColumnConstraints().size()));
+    System.err.println(filaFin + " " + columnaFin + " " + filaInicio + " " + columnaFin);
+
+    // Comprobar si ya existe un cable en la posición de inicio o fin
+    if (startX != 1090){
         for (Cable cable : cables) {
             if ((Math.abs(cable.getStartX() - startX) < 10 && Math.abs(cable.getStartY() - startY) < 10) ||
                     (Math.abs(cable.getEndX() - endX) < 10 && Math.abs(cable.getEndY() - endY) < 10)) {
@@ -150,63 +152,67 @@ public class Cablear {
                 return false; // No se dibuja el cable
             }
         }
-    
-        // Comprobar si el cable está siendo colocado en el mismo lugar en el inicio y en el fin
-        if (filaInicio == filaFin && columnaInicio == columnaFin) {
-            System.err.println("Error: El cable no puede ser colocado en el mismo lugar en el inicio y en el fin.");
+    }
+
+    // Comprobar si el cable está siendo colocado en el mismo lugar en el inicio y en el fin
+    if (filaInicio == filaFin && columnaInicio == columnaFin) {
+        System.err.println("Error: El cable no puede ser colocado en el mismo lugar en el inicio y en el fin.");
+        return false; // No se dibuja el cable
+    }
+
+    // Verifica si el objeto seleccionado es válido y si la posición es válida
+    if (objetoSeleccionado != null) {
+        if (!verificarPosicion(startX, startY, endX, endY)) {
+            // Si la posición no es válida, mostrar un mensaje de error
+            Platform.runLater(() -> {
+                Alert alerta = new Alert(Alert.AlertType.ERROR);
+                alerta.setTitle("Error");
+                alerta.setHeaderText("Error al colocar el objeto");
+                alerta.setContentText("El objeto no se puede colocar en la posición seleccionada. Verifique que esté dentro de un cable válido.");
+                alerta.showAndWait();
+            });
+
+            // Limpiar el estado de dibujo y seleccionar el objeto
+            drawing = false;
+            cablearActivo = false;
+            objetoSeleccionado = null;
             return false; // No se dibuja el cable
         }
-    
-        // Verifica si el objeto seleccionado es válido y si la posición es válida
-        if (objetoSeleccionado != null) {
-            if (!verificarPosicion(startX, startY, endX, endY)) {
-                // Si la posición no es válida, mostrar un mensaje de error
-                Platform.runLater(() -> {
-                    Alert alerta = new Alert(Alert.AlertType.ERROR);
-                    alerta.setTitle("Error");
-                    alerta.setHeaderText("Error al colocar el objeto");
-                    alerta.setContentText("El objeto no se puede colocar en la posición seleccionada. Verifique que esté dentro de un cable válido.");
-                    alerta.showAndWait();
-                });
-    
-                // Limpiar el estado de dibujo y seleccionar el objeto
-                drawing = false;
-                cablearActivo = false;
-                objetoSeleccionado = null;
-                return false; // No se dibuja el cable
-            }
-        }
-    
-        Paint color = objetoSeleccionado != null ? objetoSeleccionado.getColor() : Color.BLACK;
-        ImageView imageView = objetoSeleccionado != null ? new ImageView(objetoSeleccionado.getImagen()) : null;
-        boolean pasa = objetoSeleccionado != null ? objetoSeleccionado.getpasa() : false;
-    
-        // Crear el cable con la información proporcionada
-        Cable cable = new Cable(startX, startY, endX, endY, color, imageView, objetoSeleccionado, pasa);
-    
-        // Añadir el cable a la lista y al Pane de dibujo
-        cables.add(cable);
-        drawingPane.getChildren().add(cable.getLinea());
-        cable.getLinea().toFront();
-    
-        if (imageView != null) {
-            double cellSize = gridPane.getWidth() / gridPane.getColumnConstraints().size();
-            imageView.setFitWidth(cellSize);
-            imageView.setFitHeight(cellSize);
-    
-            imageView.setLayoutX((startX + endX) / 2 - imageView.getFitWidth() / 2);
-            imageView.setLayoutY((startY + endY) / 2 - imageView.getFitHeight() / 2);
-    
-            drawingPane.getChildren().add(imageView);
-            imageView.toFront();
-        }
-    
-        // Actualizar la matriz de conexiones para el inicio y el fin del cable
-        actualizarMatrizConexiones(filaInicio, columnaInicio, 1);
-        actualizarMatrizConexiones(filaFin, columnaFin, 1);
-        mostrarMatrizConexiones(); // Mostrar la matriz por consola
-        return true;
     }
+
+    Paint color = objetoSeleccionado != null ? objetoSeleccionado.getColor() : Color.BLACK;
+    ImageView imageView = objetoSeleccionado != null ? new ImageView(objetoSeleccionado.getImagen()) : null;
+    boolean pasa = objetoSeleccionado != null ? objetoSeleccionado.getpasa() : false;
+
+    // Crear el cable con la información proporcionada
+    Cable cable = new Cable(startX, startY, endX, endY, color, imageView, objetoSeleccionado, pasa);
+
+    // Añadir el cable a la lista y al Pane de dibujo
+    cables.add(cable);
+    drawingPane.getChildren().add(cable.getLinea());
+    cable.getLinea().toFront();
+
+    if (imageView != null) {
+        double cellSize = gridPane.getWidth() / gridPane.getColumnConstraints().size();
+        imageView.setFitWidth(cellSize);
+        imageView.setFitHeight(cellSize);
+
+        imageView.setLayoutX((startX + endX) / 2 - imageView.getFitWidth() / 2);
+        imageView.setLayoutY((startY + endY) / 2 - imageView.getFitHeight() / 2);
+
+        drawingPane.getChildren().add(imageView);
+        imageView.toFront();
+    }
+
+    // Actualizar la matriz de conexiones para el inicio y el fin del cable
+    int valor = pasa ? 1 : -1; // Determinar el valor basado en pasa
+    actualizarMatrizConexiones(filaInicio, columnaInicio, valor);
+    actualizarMatrizConexiones(filaFin, columnaFin, valor);
+    mostrarMatrizConexiones(); // Mostrar la matriz por consola
+    return true;
+}
+
+    
     
 
     private void manejarclicks(MouseEvent event) {
@@ -235,20 +241,33 @@ public class Cablear {
                 event.consume(); // Evita que el evento se propague
             }
         } else if (event.getButton() == MouseButton.PRIMARY && objetoSeleccionado == null) {
-            Cable cableToChange = null;
+            Cable cableCambiado = null;
             for (Cable cable : cables) {
                 if (cable.getLinea().contains(event.getX(), event.getY())) {
-                    cableToChange = cable;
+                    cableCambiado = cable;
                     break;
                 }
             }
-            if (cableToChange != null && cableToChange.getObjeto() != null) {
+            if (cableCambiado != null && cableCambiado.getObjeto() != null) {
                 // Cambiar el estado del objeto asociado con el cable
-                cableToChange.getObjeto().alternarImagen();
+                Objeto objeto = cableCambiado.getObjeto();
+                objeto.alternarImagen();
+                // Actualizar el valor de pasa
+                boolean nuevoPasa = objeto.getpasa();
                 // Actualizar la imagen en el pane de dibujo si es necesario
-                if (cableToChange.getImageView() != null) {
-                    cableToChange.getImageView().setImage(cableToChange.getObjeto().getImagen());
+                if (cableCambiado.getImageView() != null) {
+                    cableCambiado.getImageView().setImage(objeto.getImagen());
                 }
+                // Actualizar la matriz de conexiones
+                int filaInicio = (int) (cableCambiado.getStartY() / (gridPane.getHeight() / 14));
+                int columnaInicio = (int) (cableCambiado.getStartX() / (gridPane.getWidth() / 30));
+                int filaFin = (int) (cableCambiado.getEndY() / (gridPane.getHeight() / 14));
+                int columnaFin = (int) (cableCambiado.getEndX() / (gridPane.getWidth() / 30));
+                int valor = nuevoPasa ? 1 : -1; // Determinar el valor basado en pasa
+                actualizarMatrizConexiones(filaInicio, columnaInicio, valor);
+                actualizarMatrizConexiones(filaFin, columnaFin, valor);
+                mostrarMatrizConexiones(); // Mostrar la matriz por consola
+        
                 event.consume(); // Evita que el evento se propague
             }
         }
@@ -256,10 +275,28 @@ public class Cablear {
 
     // Método para cambiar un cable por otro objeto o estado
     private void cambiarCable(Cable cable) {
-        eliminarCable(cable); // Elimina el cable actual
+        // Obtener las coordenadas del cable existente
+        int filaInicio = (int) (cable.getStartY() / (gridPane.getHeight() / 14));
+        int columnaInicio = (int) (cable.getStartX() / (gridPane.getWidth() / 30));
+        int filaFin = (int) (cable.getEndY() / (gridPane.getHeight() / 14));
+        int columnaFin = (int) (cable.getEndX() / (gridPane.getWidth() / 30));
+    
+        // Eliminar el cable actual
+        eliminarCable(cable);
+    
         // Crear un nuevo cable con las mismas coordenadas pero con el nuevo objeto
         dibujarCable(cable.getStartX(), cable.getStartY(), cable.getEndX(), cable.getEndY(), loc.getFilaActual(),
                 loc.getColumnaActual());
+    
+        // Actualizar la matriz de conexiones para el nuevo estado del cable
+        Cable nuevoCable = cables.get(cables.size() - 1); // El último cable agregado es el nuevo cable
+        boolean pasa = nuevoCable.pasa(); // Obtener el nuevo estado de pasa
+        int valor = pasa ? 1 : -1; // Determinar el valor basado en pasa
+        actualizarMatrizConexiones(filaInicio, columnaInicio, valor);
+        actualizarMatrizConexiones(filaFin, columnaFin, valor);
+        mostrarMatrizConexiones(); // Mostrar la matriz por consola
+        // Actualizar la matriz para el inicio y el fin del nuevo cable
+    
         cablearActivo = false; // Desactiva la funcionalidad de cablear después de cambiar
         objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
     }

@@ -124,7 +124,7 @@ public class Protoboard {
                 if (node != null && node instanceof Circle) { // Asegurarse de que no sea null y sea un Circle
                     Circle punto = (Circle) node;
                     Color color = (Color) punto.getFill(); // Cambié de Label a Circle ya que los nodos son círculos
-                    if (color.equals(Color.GREEN)) {
+                    if (color.equals(Color.BLUE)) {
                         matriz[i][j] = '+'; // Verde
                     } else if (color.equals(Color.RED)) {
                         matriz[i][j] = '-'; // Rojo

@@ -50,7 +50,7 @@ public class Cable {
         return imageView;
     }
 
-    public boolean PasaEnergia(){
+    public boolean pasa(){
         return pasaEnergia;
     }
 
