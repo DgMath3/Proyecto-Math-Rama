@@ -89,8 +89,8 @@ public class Bateria {
             protoboard.actualizarMatriz(gridPane);
 
             // Dibuja el cable desde el botón hacia la celda seleccionada
-            double endX = evento.getX();
-            double endY = evento.getY();
+            double endX = evento.getX() - 5;
+            double endY = evento.getY() - 5;
 
             // Verifica y dibuja el cable si no hay conflictos
             boolean exito = cablear.dibujarCable(startX, startY, endX, endY, fila, columna);

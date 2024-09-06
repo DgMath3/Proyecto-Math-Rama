@@ -4,41 +4,42 @@ import javafx.scene.paint.Color;
 public class Objeto {
     private String id;
     private Image imagen;
-    private Color color; // Añadir atributo para el color
+    private Color color; 
     private boolean pasa;
-    private boolean switchState; // Atributo para rastrear el estado del switch
+    private boolean switchState;
 
     public Objeto(String id) {
         this.id = id;
-        this.switchState = false; // Inicializar estado
+        this.switchState = false; 
         cargarImagenYColor();
     }
 
+    @SuppressWarnings("static-access")
     private void cargarImagenYColor() {
         switch (id) {
             case "Cable_azul":
                 imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\nada.png");
-                color = Color.BLUE; // Asignar un color para el cable
+                color = Color.DARKBLUE;
                 pasa = true; 
                 break;
             case "Cable_rojo":
                 imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\nada.png");
-                color = Color.RED; // Asignar un color para el cable
+                color = color.DARKRED; 
                 pasa = true; 
                 break;
             case "Led":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\led.png");
-                color = Color.GRAY;
+                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\led_off.png");
+                color = Color.DARKGRAY;
                 pasa = true; 
                 break;
             case "Switch":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\switch_off.png"); // Inicialmente apagado
+                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\switch_off.png"); 
                 color = Color.BLACK;
                 pasa = false; 
                 break;
             default:
                 imagen = null;
-                color = Color.BLACK; // Color por defecto
+                color = Color.BLACK; 
                 pasa = true; 
                 break;
         }
