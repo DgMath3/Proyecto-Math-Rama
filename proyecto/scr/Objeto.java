@@ -5,6 +5,7 @@ public class Objeto {
     private String id;
     private Image imagen;
     private Color color; 
+    private int largo;
     private boolean pasa;
     private boolean switchState;
 
@@ -18,24 +19,28 @@ public class Objeto {
     private void cargarImagenYColor() {
         switch (id) {
             case "Cable_azul":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\nada.png");
+                imagen = new Image("file:C:\\Users\\matia\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
                 color = Color.DARKBLUE;
                 pasa = true; 
+                largo = 99;
                 break;
             case "Cable_rojo":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\nada.png");
+                imagen = new Image("file:C:\\Users\\matia\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
                 color = color.DARKRED; 
                 pasa = true; 
+                largo = 99;
                 break;
             case "Led":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\led_off.png");
+                imagen = new Image("file:C:\\Users\\matia\\OneDrive\\Escritorio\\proyecto\\resources\\led_off.png");
                 color = Color.DARKGRAY;
-                pasa = true; 
+                pasa = true;
+                largo = 2;
                 break;
             case "Switch":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\switch_off.png"); 
+                imagen = new Image("file:C:\\Users\\matia\\OneDrive\\Escritorio\\proyecto\\resources\\switch_off.png"); 
                 color = Color.BLACK;
                 pasa = false; 
+                largo = 4;
                 break;
             default:
                 imagen = null;
@@ -57,8 +62,11 @@ public class Objeto {
         return id;
     }
 
-    public boolean getpasa(){
+    public boolean getpasa() {
         return pasa;
+    }
+    public int getLargo() {
+        return largo;
     }
 
     // Método para alternar la imagen
