@@ -6,11 +6,11 @@ public class Controlador {
 
     public void actualizarBuses(GridPane gridPane) {
         for (int i = 0; i < 2; i++) {
-            actualizarFilaBus(gridPane, i, Color.GREEN);
+            actualizarFilaBus(gridPane, i, Color.BLUE);
             actualizarFilaBus(gridPane, i, Color.RED);
         }
         for (int i = 12; i < 14; i++) {
-            actualizarFilaBus(gridPane, i, Color.GREEN);
+            actualizarFilaBus(gridPane, i, Color.BLUE);
             actualizarFilaBus(gridPane, i, Color.RED);
         }
     }
@@ -37,11 +37,11 @@ public class Controlador {
 
     public void ActualizarProtoboard(GridPane gridPane) {
         for (int i = 2; i < 7; i++) {
-            actualizarFila(gridPane, i, Color.GREEN);
+            actualizarFila(gridPane, i, Color.BLUE);
             actualizarFila(gridPane, i, Color.RED);
         }
         for (int i = 7; i < 12; i++) {
-            actualizarFila(gridPane, i, Color.GREEN);
+            actualizarFila(gridPane, i, Color.BLUE);
             actualizarFila(gridPane, i, Color.RED);
         }
     }
