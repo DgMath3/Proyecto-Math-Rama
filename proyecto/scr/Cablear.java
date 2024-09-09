@@ -503,19 +503,6 @@ public class Cablear {
                             cable.getFilaInicio(), cable.getColumnaInicio());
                 }
             }
-            if (idObjeto.equals("Led") && objeto.isLedActivado()) {
-                if ((matrizEnergia[filaInicio][columnaInicio].equals("|")
-                        && matrizEnergia[filaFin][columnaFin].equals("|")) ||
-                        (matrizEnergia[filaInicio][columnaInicio].equals("|")
-                                && matrizEnergia[filaFin][columnaFin].equals("|"))) {
-                    System.out.println("Activando LED");
-                    eliminarCable(cable);
-                    objeto.setLedActivado(false);
-                    // Dibujar un nuevo cable con el LED activado
-                    dibujarCable(cable.getStartX(), cable.getStartY(), cable.getEndX(), cable.getEndY(),
-                            cable.getFilaInicio(), cable.getColumnaInicio());
-                }
-            }
         }
     }
 
