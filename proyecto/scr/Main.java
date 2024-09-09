@@ -13,6 +13,7 @@ public class Main extends Application {
 public void start(Stage primaryStage) {
     // Crear los componentes principales
     Protoboard protoboard = new Protoboard();
+    Controlador controlador = new Controlador(); 
 
     // Crear la escena
     StackPane root = new StackPane();
@@ -20,13 +21,11 @@ public void start(Stage primaryStage) {
 
     // Crear la instancia de Cablear con el Protoboard y el Loc
     Loc loc = new Loc(protoboard.getGridPane(), Color.BLACK, null);
-    Cablear cablear = new Cablear(protoboard.getGridPane(), loc);
+    Cablear cablear = new Cablear(protoboard.getGridPane(), loc, protoboard, controlador);
 
     // Crear la barra de menú con la instancia de Cablear
     MenuBarra menuBarra = new MenuBarra(cablear);
 
-    // Crear el controlador (sin Conexiones si no se necesita)
-    Controlador controlador = new Controlador(); 
     Bateria bateria = new Bateria(loc, protoboard, controlador, protoboard.getGridPane(), cablear);
 
     // Crear la imagen de fondo

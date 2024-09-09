@@ -66,7 +66,7 @@ public class Bateria {
         }
     
         // Configura el objeto seleccionado para el cable
-        Objeto objeto = new Objeto(color == Color.BLUE ? "Cable_azul" : "Cable_rojo");
+        Objeto objeto = new Objeto(color == Color.BLUE ? "cablegen+" : "cablegen-");
         cablear.setObjetoSeleccionado(objeto);
     
         // Configura el evento de clic en el GridPane
@@ -88,7 +88,7 @@ public class Bateria {
             double endY = evento.getY() - 5;
     
             // Verifica y dibuja el cable si no hay conflictos
-            boolean exito = cablear.dibujarCable(startX, startY, endX, endY, fila, columna);
+            boolean exito = cablear.dibujarCableSolo(startX, startY, endX, endY);
             if (exito) {
                 // Aplica el color y actualiza el protoboard
                 protoboard.cambiarColor(fila, columna, colorEsperado);
