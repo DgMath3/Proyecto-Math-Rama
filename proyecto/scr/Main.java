@@ -29,7 +29,7 @@ public void start(Stage primaryStage) {
     Bateria bateria = new Bateria(loc, protoboard, controlador, protoboard.getGridPane(), cablear);
 
     // Crear la imagen de fondo
-    Image fondoImagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\fondo.png");
+    Image fondoImagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\fondo.png");
     BackgroundSize backgroundSize = new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true);
     BackgroundImage backgroundImage = new BackgroundImage(fondoImagen, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
     Background fondo = new Background(backgroundImage);
