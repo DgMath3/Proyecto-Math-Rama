@@ -108,10 +108,6 @@ public class Protoboard {
 
     // Método para actualizar la matriz según el color de los puntos del GridPane
     public void actualizarMatriz(GridPane gridPane) {
-        if (matriz == null) {
-            System.out.println("Error: la matriz no está inicializada.");
-            return;
-        }
         for (int i = 0; i < numFilas; i++) {
             for (int j = 0; j < numColumnas; j++) {
                 Node node = obtenerhoyito(gridPane, i, j);
@@ -125,12 +121,9 @@ public class Protoboard {
                     } else {
                         matriz[i][j] = "|"; // Neutro
                     }
-                } else {
-                    matriz[i][j] = " "; // Espacio en blanco si no hay nodo
-                }
+                } 
             }
         }
-        imprimirMatriz(); // Imprime la matriz en la consola
     }
     
 
