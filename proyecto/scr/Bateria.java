@@ -30,7 +30,7 @@ public class Bateria {
         this.cablear = cablear;
 
         contenedorBateria = new VBox();
-        bateriaImagen = new ImageView(new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\bateria.png")); 
+        bateriaImagen = new ImageView(new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\bateria.png")); 
         bateriaImagen.setFitWidth(100); 
         bateriaImagen.setPreserveRatio(true); 
         
@@ -88,13 +88,14 @@ public class Bateria {
             double endY = evento.getY() - 5;
     
             // Verifica y dibuja el cable si no hay conflictos
-            boolean exito = cablear.dibujarCableSolo(startX, startY, endX, endY);
+            boolean exito = cablear.dibujarCable(startX, startY, endX, endY,fila,columna);
             if (exito) {
                 // Aplica el color y actualiza el protoboard
                 protoboard.cambiarColor(fila, columna, colorEsperado);
                 controlador.actualizarBuses(protoboard.getGridPane());
                 controlador.ActualizarProtoboard(protoboard.getGridPane());
                 protoboard.actualizarMatriz(gridPane);
+                cablear.actualizarObjetos(protoboard.getMatriz());
                 System.out.println("Cable conectado y color aplicado.");
             } else {
                 System.out.println("No se pudo conectar el cable (posiblemente hay un cable en la misma posición).");

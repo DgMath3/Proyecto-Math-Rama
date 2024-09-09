@@ -29,7 +29,7 @@ public class Loc {
 
         for (int fila = 0; fila < filas; fila++) {
             for (int columna = 0; columna < columnas; columna++) {
-                Circle celda = new Circle(10, colorDefecto);  // Ajusta el radio según sea necesario
+                Circle celda = new Circle(12, colorDefecto);  // Ajusta el radio según sea necesario
                 gridPane.add(celda, columna, fila);
                 celdas[fila][columna] = celda;
             }

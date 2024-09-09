@@ -20,37 +20,37 @@ public class Objeto {
     private void cargarImagenYColor() {
         switch (id) {
             case "Cable_azul":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\nada.png");
+                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
                 color = Color.DARKBLUE;
                 pasa = true; 
                 largo = 99;
                 break;
             case "Cable_rojo":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\nada.png");
+                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
                 color = color.DARKRED; 
                 pasa = true; 
                 largo = 99;
                 break;
             case "Led":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\led_off.png");
+                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\led_off.png");
                 color = Color.DARKGRAY;
                 pasa = true;
                 largo = 3;
                 break;
             case "Switch":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\switch_off.png"); 
+                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_off.png");
                 color = Color.BLACK;
                 pasa = false; 
                 largo = 4;
                 break;
             case "cablegen+":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\nada.png");
+                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
                 color = Color.DARKBLUE;
                 pasa = true; 
                 largo = 99;
                 break;
             case "cablegen-":
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\nada.png");
+                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
                 color = Color.DARKRED;
                 pasa = true; 
                 largo = 99;
@@ -88,10 +88,10 @@ public class Objeto {
         if (id.equals("Switch")) {
             switchState = !switchState; // Alternar el estado
             if (switchState) {
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\switch_on.png");
+                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_on.png");
                 pasa = true; 
             } else {
-                imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\switch_off.png");
+                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_off.png");
                 pasa = false;
             }
         }
@@ -99,7 +99,7 @@ public class Objeto {
     // Método para alternar la imagen
     public void alternarLed() {
         if (id.equals("Led")) {
-            imagen = new Image("file:C:\\Users\\Felipe\\Desktop\\proyecto\\resources\\led_on.png");
+            imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\led_on.png");
         }
     }
     public boolean isLedActivado() {
