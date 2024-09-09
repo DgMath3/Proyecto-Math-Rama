@@ -6,11 +6,15 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.shape.Circle;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.util.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javafx.scene.Node;
 
 public class Cablear {
     private final GridPane gridPane;
@@ -337,7 +341,6 @@ public class Cablear {
                 }
                 actualizarMatrizConexiones(filaFin, columnaFin, valor);
                 mostrarMatrizConexiones(); // Mostrar la matriz por consola
-
                 event.consume(); // Evita que el evento se propague
             }
         }
@@ -408,7 +411,7 @@ public class Cablear {
                 && columnaFin < matrizConexiones[0].length) {
             actualizarMatrizConexiones(filaFin, columnaFin, 0);
         }
-
+        eliminarSectoresSinCable(protoboard.getMatriz(),gridPane);
         mostrarMatrizConexiones(); // Mostrar la matriz por consola
     }
 
@@ -448,12 +451,19 @@ public class Cablear {
     }
 
     public void actualizarObjetos(String[][] matrizEnergia) {
-        for (Cable cable : cables) {
+        int size = cables.size();
+
+        for (int i = size - 1; i >= 0; i--) {
+            Cable cable = cables.get(i);
             procesarCable(cable, matrizEnergia);
         }
-        protoboard.actualizarMatriz(gridPane);
+
+        for (Cable cable : cables){
+            procesarCable(cable, matrizEnergia);
+        }
         protoboard.imprimirMatriz();
     }
+    
 
     private void procesarCable(Cable cable, String[][] matrizEnergia) {
         int filaInicio = cable.getFilaInicio();
@@ -461,6 +471,7 @@ public class Cablear {
         int filaFin = cable.getFilaFin();
         int columnaFin = cable.getColumnaFin();
         Objeto objeto = cable.getObjeto();
+        
     
         if (objeto != null) {
             String idObjeto = objeto.getId();
@@ -501,6 +512,7 @@ public class Cablear {
         }
         // Después de actualizar la matriz de energía, actualizar los colores en el protoboard
         aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+        protoboard.actualizarMatriz(gridPane);
     }
     
     
@@ -524,4 +536,54 @@ public class Cablear {
         controlador.ActualizarProtoboard(protoboard.getGridPane());
     }
     
+    public void eliminarSectoresSinCable(String[][] matrizEnergia, GridPane gridPane) {
+    // Primero, crea un conjunto para almacenar las celdas que están conectadas por cables
+    Set<String> celdasConectadas = new HashSet<>();
+
+    // Recorre los cables y marca las celdas conectadas
+    for (Cable cable : cables) {
+        int filaInicio = cable.getFilaInicio();
+        int columnaInicio = cable.getColumnaInicio();
+        int filaFin = cable.getFilaFin();
+        int columnaFin = cable.getColumnaFin();
+
+        // Marca las celdas conectadas en el conjunto
+        celdasConectadas.add(filaInicio + "," + columnaInicio);
+        celdasConectadas.add(filaFin + "," + columnaFin);
+    }
+
+    // Recorre la matriz de energía
+    for (int i = 0; i < matrizEnergia.length; i++) {
+        for (int j = 0; j < matrizEnergia[i].length; j++) {
+            // Verifica si la celda está en el conjunto de celdas conectadas
+            if (!celdasConectadas.contains(i + "," + j)) {
+                // Si la celda no está conectada, cámbiala a lightgray
+                matrizEnergia[i][j] = "|"; // Suponiendo que "|" indica energía sin conexión
+                cambiarColorCelda(i, j, Color.LIGHTGRAY, gridPane);
+            }
+        }
+    }
+
+    // Actualiza el protoboard después de los cambios
+    controlador.actualizarBuses(gridPane);
+    controlador.ActualizarProtoboard(gridPane);
+}
+
+private void cambiarColorCelda(int fila, int columna, Color color, GridPane gridPane) {
+    // Encuentra el nodo correspondiente en el GridPane y cambia su color
+    Node nodo = getNodeFromGridPane(fila, columna, gridPane);
+    if (nodo instanceof Circle) {
+        ((Circle) nodo).setFill(color);
+    }
+}
+
+private Node getNodeFromGridPane(int fila, int columna, GridPane gridPane) {
+    for (Node node : gridPane.getChildren()) {
+        if (GridPane.getRowIndex(node) == fila && GridPane.getColumnIndex(node) == columna) {
+            return node;
+        }
+    }
+    return null;
+}
+
 }
