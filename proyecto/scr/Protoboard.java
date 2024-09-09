@@ -13,13 +13,14 @@ public class Protoboard {
     private final int numFilas = 14;
     private final int numColumnas = 30;
     private final double espacio = 15.0;
-    private char[][] matriz;
+    private String[][] matriz;
 
     public Protoboard() {
         gridPane = new GridPane();
         configurarGridPane();
         crearProtoboard();
-        matriz = new char[numFilas][numColumnas];
+        matriz = new String[numFilas][numColumnas];
+        inicializarMatrizEnergia(matriz);
     }
 
     public void cambiarColor(int fila, int columna, Color color) {
@@ -28,7 +29,7 @@ public class Protoboard {
     }
 
     private void configurarGridPane() {
-        gridPane.setPrefSize(1200, 800);
+        gridPane.setPrefSize(1000, 800);
 
         for (int i = 0; i < numColumnas; i++) {
             ColumnConstraints col = new ColumnConstraints();
@@ -56,13 +57,6 @@ public class Protoboard {
                 final int columnaFinal = j;  // Variable final para lambda
 
                 Circle punto = new Circle(puntoTamaño, Color.LIGHTGRAY);
-
-                if (i == 0 || i == 1) {
-                    punto.setFill(Color.LIGHTGRAY); // Buses superiores
-                } else if (i == 12 || i == 13) {
-                    punto.setFill(Color.LIGHTGRAY); // Buses inferiores
-                }
-
                 // Asignar evento de clic
                 punto.setOnMouseClicked(event -> manejarClickEnBus(punto, filaFinal, columnaFinal));
 
@@ -125,14 +119,14 @@ public class Protoboard {
                     Circle punto = (Circle) node;
                     Color color = (Color) punto.getFill(); // Cambié de Label a Circle ya que los nodos son círculos
                     if (color.equals(Color.BLUE)) {
-                        matriz[i][j] = '+'; // Verde
+                        matriz[i][j] = "+"; // Verde
                     } else if (color.equals(Color.RED)) {
-                        matriz[i][j] = '-'; // Rojo
+                        matriz[i][j] = "-"; // Rojo
                     } else {
-                        matriz[i][j] = '|'; // Neutro
+                        matriz[i][j] = "|"; // Neutro
                     }
                 } else {
-                    matriz[i][j] = ' '; // Espacio en blanco si no hay nodo
+                    matriz[i][j] = " "; // Espacio en blanco si no hay nodo
                 }
             }
         }
@@ -150,7 +144,10 @@ public class Protoboard {
         }
         return null;
     }
-
+    public String[][] getMatriz(){
+        return matriz;
+    }
+    
     // Método para imprimir la matriz
     public void imprimirMatriz() {
         for (int i = 0; i < numFilas; i++) {
@@ -160,4 +157,14 @@ public class Protoboard {
             System.out.println();
         }
     }
+    private void inicializarMatrizEnergia(String[][] matrizEnergia) {
+        for (int i = 0; i < matrizEnergia.length; i++) {
+            for (int j = 0; j < matrizEnergia[i].length; j++) {
+                if (matrizEnergia[i][j] == null) {
+                    matrizEnergia[i][j] = "|";  // Valor por defecto si no hay energía.
+                }
+            }
+        }
+    }
+    
 }

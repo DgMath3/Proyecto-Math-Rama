@@ -8,8 +8,12 @@ public class Cable {
     private final ImageView imageView;
     private final Objeto objeto; // Nuevo atributo para asociar un objeto
     private boolean pasaEnergia;
+    private final int filaInicio; // Nueva variable para la fila de inicio
+    private final int columnaInicio; // Nueva variable para la columna de inicio
+    private final int filaFin; // Nueva variable para la fila de fin
+    private final int columnaFin; // Nueva variable para la columna de fin
 
-    public Cable(double startX, double startY, double endX, double endY, Paint color, ImageView imageView, Objeto objeto, boolean pasaEnergia) {
+    public Cable(double startX, double startY, double endX, double endY, Paint color, ImageView imageView, Objeto objeto, boolean pasaEnergia, int filaInicio, int columnaInicio, int filaFin, int columnaFin) {
         this.linea = new Line(startX, startY, endX, endY);
         this.linea.setStroke(color);
         this.linea.setStrokeWidth(7); // Ajusta el grosor aquí
@@ -17,6 +21,12 @@ public class Cable {
         this.imageView = imageView;
         this.objeto = objeto; // Inicializar el objeto
         this.pasaEnergia = pasaEnergia;
+        
+        // Inicializa las filas y columnas
+        this.filaInicio = filaInicio;
+        this.columnaInicio = columnaInicio;
+        this.filaFin = filaFin;
+        this.columnaFin = columnaFin;
 
         this.linea.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.SECONDARY) { // Detecta clic derecho
@@ -50,11 +60,28 @@ public class Cable {
         return imageView;
     }
 
-    public boolean pasa(){
+    public boolean pasa() {
         return pasaEnergia;
     }
 
     public Objeto getObjeto() {
         return objeto; // Nuevo método para obtener el objeto asociado
+    }
+
+    // Métodos para obtener las filas y columnas
+    public int getFilaInicio() {
+        return filaInicio;
+    }
+
+    public int getColumnaInicio() {
+        return columnaInicio;
+    }
+
+    public int getFilaFin() {
+        return filaFin;
+    }
+
+    public int getColumnaFin() {
+        return columnaFin;
     }
 }

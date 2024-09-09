@@ -2,6 +2,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.Node;
 
 public class Loc {
     private final GridPane gridPane;
@@ -17,6 +18,8 @@ public class Loc {
         this.colorDefecto = colorDefecto;
         inicializarCeldas();
         configurarEventos();
+
+
     }
 
     private void inicializarCeldas() {
@@ -24,15 +27,9 @@ public class Loc {
         int columnas = gridPane.getColumnConstraints().size();
         celdas = new Circle[filas][columnas];
 
-        double cellWidth = gridPane.getWidth() / columnas;
-        double cellHeight = gridPane.getHeight() / filas;
-
         for (int fila = 0; fila < filas; fila++) {
             for (int columna = 0; columna < columnas; columna++) {
-                Circle celda = new Circle(10, colorDefecto); // Ajusta el radio según sea necesario
-                // Posicionar el círculo en el centro de la celda
-                celda.setTranslateX(columna * cellWidth + cellWidth / 2);
-                celda.setTranslateY(fila * cellHeight + cellHeight / 2);
+                Circle celda = new Circle(10, colorDefecto);  // Ajusta el radio según sea necesario
                 gridPane.add(celda, columna, fila);
                 celdas[fila][columna] = celda;
             }
@@ -40,24 +37,25 @@ public class Loc {
     }
 
     private void configurarEventos() {
-        gridPane.setOnMouseMoved(this::manejarMovimientoMouse);
+        gridPane.setOnMouseMoved(event -> {
+            // Actualiza la posición del mouse
+            manejarMovimientoMouse(event);
+        });
         gridPane.setOnMouseExited(this::manejarSalidaMouse);
     }
 
     private void manejarMovimientoMouse(MouseEvent evento) {
-        // Tamaño de cada celda en píxeles
-        double cellWidth = gridPane.getWidth() / gridPane.getColumnConstraints().size();
-        double cellHeight = gridPane.getHeight() / gridPane.getRowConstraints().size();
-        int indiceFila = (int) (evento.getY() / cellHeight);
-        int indiceColumna = (int) (evento.getX() / cellWidth);
+        // Obtener nodo bajo el mouse
+        Node nodo = obtenerNodoBajoMouse(evento.getX(), evento.getY());
 
         // Restablecer el color de todas las celdas
         restablecerColores();
 
-        // Resaltar la celda actual
-        if (indiceFila >= 0 && indiceFila < celdas.length &&
-            indiceColumna >= 0 && indiceColumna < celdas[0].length) {
-            if (celdas[indiceFila][indiceColumna] != null) {
+        if (nodo instanceof Circle) {
+            Integer indiceFila = GridPane.getRowIndex(nodo);
+            Integer indiceColumna = GridPane.getColumnIndex(nodo);
+
+            if (indiceFila != null && indiceColumna != null) {
                 celdas[indiceFila][indiceColumna].setFill(colorResaltado);
                 filaActual = indiceFila;
                 columnaActual = indiceColumna;
@@ -81,6 +79,15 @@ public class Loc {
         }
     }
 
+    private Node obtenerNodoBajoMouse(double x, double y) {
+        for (Node nodo : gridPane.getChildren()) {
+            if (nodo.getBoundsInParent().contains(x, y)) {
+                return nodo;
+            }
+        }
+        return null;
+    }
+
     public int getFilaActual() {
         return filaActual;
     }
@@ -92,5 +99,21 @@ public class Loc {
     public boolean estaDentroDelGridPane(double x, double y) {
         return x >= 0 && x <= gridPane.getWidth() &&
                y >= 0 && y <= gridPane.getHeight();
+    }
+
+    public int[] getfilaccoluma(double x, double y) {
+        // Obtener el tamaño del GridPane y el número de filas y columnas
+        double anchoCelda = gridPane.getWidth() / gridPane.getColumnConstraints().size();
+        double altoCelda = gridPane.getHeight() / gridPane.getRowConstraints().size();
+    
+        // Calcular la columna y la fila en base a las coordenadas (x, y)
+        int columna = (int) (x / anchoCelda);
+        int fila = (int) (y / altoCelda);
+    
+        // Asegurarse de que la columna y fila estén dentro de los límites válidos
+        columna = Math.max(0, Math.min(columna, gridPane.getColumnConstraints().size() - 1));
+        fila = Math.max(0, Math.min(fila, gridPane.getRowConstraints().size() - 1));
+    
+        return new int[]{fila, columna};
     }
 }
