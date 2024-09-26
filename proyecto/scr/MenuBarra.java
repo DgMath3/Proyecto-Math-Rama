@@ -4,10 +4,10 @@ import javafx.scene.control.MenuItem;
 
 public class MenuBarra {
     private final MenuBar menuBar;
-    private final Cablear cablear;
+    private final GestorCables cablear;
     private Runnable onObjetoSeleccionado;
 
-    public MenuBarra(Cablear cablear) {
+    public MenuBarra(GestorCables cablear) {
         this.cablear = cablear;
         this.menuBar = new MenuBar();
 
