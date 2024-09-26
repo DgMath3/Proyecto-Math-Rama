@@ -4,7 +4,7 @@ import javafx.scene.paint.Color;
 public class Objeto {
     private String id;
     private Image imagen;
-    private Color color; 
+    private Color color;
     private int largo;
     private boolean pasa;
     private boolean switchState;
@@ -12,7 +12,7 @@ public class Objeto {
 
     public Objeto(String id) {
         this.id = id;
-        this.switchState = false; 
+        this.switchState = false;
         cargarImagenYColor();
     }
 
@@ -22,13 +22,13 @@ public class Objeto {
             case "Cable_azul":
                 imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
                 color = Color.DARKBLUE;
-                pasa = true; 
+                pasa = true;
                 largo = 99;
                 break;
             case "Cable_rojo":
                 imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
-                color = color.DARKRED; 
-                pasa = true; 
+                color = color.DARKRED;
+                pasa = true;
                 largo = 99;
                 break;
             case "Led":
@@ -40,25 +40,25 @@ public class Objeto {
             case "Switch":
                 imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_off.png");
                 color = Color.BLACK;
-                pasa = false; 
+                pasa = false;
                 largo = 4;
                 break;
             case "cablegen+":
                 imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
                 color = Color.DARKBLUE;
-                pasa = true; 
+                pasa = true;
                 largo = 99;
                 break;
             case "cablegen-":
                 imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
                 color = Color.DARKRED;
-                pasa = true; 
+                pasa = true;
                 largo = 99;
                 break;
             default:
                 imagen = null;
-                color = Color.BLACK; 
-                pasa = true; 
+                color = Color.BLACK;
+                pasa = true;
                 largo = 99;
                 break;
         }
@@ -79,29 +79,32 @@ public class Objeto {
     public boolean getpasa() {
         return pasa;
     }
+
     public int getLargo() {
         return largo;
     }
 
-    // Método para alternar la imagen
+    // Método para alternar la imagen y el estado del Switch
     public void alternarImagen() {
         if (id.equals("Switch")) {
             switchState = !switchState; // Alternar el estado
             if (switchState) {
                 imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_on.png");
-                pasa = true; 
+                pasa = true; // El switch está encendido, debe pasar corriente
             } else {
                 imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_off.png");
-                pasa = false;
+                pasa = false; // El switch está apagado, no debe pasar corriente
             }
         }
     }
+
     // Método para alternar la imagen
     public void alternarLed() {
         if (id.equals("Led")) {
             imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\led_on.png");
         }
     }
+
     public boolean isLedActivado() {
         return ledActivado;
     }

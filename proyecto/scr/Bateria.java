@@ -19,15 +19,15 @@ public class Bateria {
     private Controlador controlador;
     private Color colorEsperado;
     private GridPane gridPane;
-    private Cablear cablear;
+    private GestorCables gestorcables;
     private double startX, startY; // Coordenadas del botón presionado
 
-    public Bateria(Loc loc, Protoboard protoboard, Controlador controlador, GridPane gridPane, Cablear cablear) {
+    public Bateria(Loc loc, Protoboard protoboard, Controlador controlador, GridPane gridPane, GestorCables cablear) {
         this.loc = loc;
         this.protoboard = protoboard;
         this.controlador = controlador;
         this.gridPane = gridPane;
-        this.cablear = cablear;
+        this.gestorcables = cablear;
 
         contenedorBateria = new VBox();
         bateriaImagen = new ImageView(new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\bateria.png")); 
@@ -67,7 +67,7 @@ public class Bateria {
     
         // Configura el objeto seleccionado para el cable
         Objeto objeto = new Objeto(color == Color.BLUE ? "cablegen+" : "cablegen-");
-        cablear.setObjetoSeleccionado(objeto);
+        gestorcables.setObjetoSeleccionado(objeto);
     
         // Configura el evento de clic en el GridPane
         gridPane.setOnMouseClicked(this::manejarClickGridPane);
@@ -88,14 +88,14 @@ public class Bateria {
             double endY = evento.getY() - 5;
     
             // Verifica y dibuja el cable si no hay conflictos
-            boolean exito = cablear.dibujarCable(startX, startY, endX, endY,fila,columna);
+            boolean exito = gestorcables.dibujarCable(startX, startY, endX, endY,fila,columna);
             if (exito) {
                 // Aplica el color y actualiza el protoboard
                 protoboard.cambiarColor(fila, columna, colorEsperado);
                 controlador.actualizarBuses(protoboard.getGridPane());
                 controlador.ActualizarProtoboard(protoboard.getGridPane());
                 protoboard.actualizarMatriz(gridPane);
-                cablear.actualizarObjetos(protoboard.getMatriz());
+                gestorcables.actualizarObjetos(protoboard.getMatriz());
                 System.out.println("Cable conectado y color aplicado.");
             } else {
                 System.out.println("No se pudo conectar el cable (posiblemente hay un cable en la misma posición).");
