@@ -130,7 +130,6 @@ public class Protoboard {
                 }
             }
         }
-        imprimirMatriz(); // Imprime la matriz en la consola
     }
     
 
