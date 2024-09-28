@@ -147,15 +147,6 @@ public class Protoboard {
         return matriz;
     }
     
-    // Método para imprimir la matriz
-    public void imprimirMatriz() {
-        for (int i = 0; i < numFilas; i++) {
-            for (int j = 0; j < numColumnas; j++) {
-                System.out.print(matriz[i][j] + " ");
-            }
-            System.out.println();
-        }
-    }
     private void inicializarMatrizEnergia(String[][] matrizEnergia) {
         for (int i = 0; i < matrizEnergia.length; i++) {
             for (int j = 0; j < matrizEnergia[i].length; j++) {

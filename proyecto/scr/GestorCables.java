@@ -14,6 +14,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import javafx.scene.Node;
 
 public class GestorCables {
@@ -231,13 +235,12 @@ public class GestorCables {
         } else {
             valor = pasa ? 1 : -1; // Determinar el valor basado en pasa
         }
-        System.err.println(filaInicio + " " + columnaInicio + " " + filaFin + " " + columnaFin);
         if (startX != 1090) {
             actualizarMatrizConexiones(filaFin, columnaFin, valor);
         }
         actualizarMatrizConexiones(filaInicio, columnaInicio, valor);
-        mostrarMatrizConexiones(); // Mostrar la matriz por consola
         if (startX != 1090) {
+            actualizarObjetos(protoboard.getMatriz());
             actualizarObjetos(protoboard.getMatriz());
         }
         return true;
@@ -277,30 +280,17 @@ public class GestorCables {
                 }
             }
             if (cableCambiado != null && cableCambiado.getObjeto() != null) {
-                // Cambiar el estado del objeto asociado con el cable
-                Objeto objeto = cableCambiado.getObjeto();
-                objeto.alternarImagen();
-                // Actualizar el valor de pasa
-                boolean nuevoPasa = objeto.getpasa();
-                // Actualizar la imagen en el pane de dibujo si es necesario
-                if (cableCambiado.getImageView() != null) {
-                    cableCambiado.getImageView().setImage(objeto.getImagen());
+                if (cableCambiado.getObjeto().getId().equals("Switch")) {
+                    eliminarEnergiaSinConexiones(protoboard.getMatriz());
+                    objetoSeleccionado = new Objeto("SwitchOn");
+                    cambiarCable(cableCambiado);
+                    objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
+                } else if (cableCambiado.getObjeto().getId().equals("SwitchOn")) {
+                    eliminarEnergiaSinConexiones(protoboard.getMatriz());
+                    objetoSeleccionado = new Objeto("Switch");
+                    cambiarCable(cableCambiado);
+                    objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
                 }
-                // Actualizar la matriz de conexiones
-                int[] inicioL = loc.getfilaccoluma(cableCambiado.getStartX() + 10, cableCambiado.getStartY());
-                int[] finalL = loc.getfilaccoluma(cableCambiado.getEndX() + 10, cableCambiado.getEndY());
-
-                int filaInicio = inicioL[0];
-                int columnaInicio = inicioL[1];
-                int filaFin = finalL[0];
-                int columnaFin = finalL[1];
-                int valor = nuevoPasa ? 1 : -1; // Determinar el valor basado en pasa
-                if (cableCambiado.getStartX() != 1090) {
-                    actualizarMatrizConexiones(filaInicio, columnaInicio, valor);
-                }
-                actualizarMatrizConexiones(filaFin, columnaFin, valor);
-                mostrarMatrizConexiones(); // Mostrar la matriz por consola
-
                 event.consume(); // Evita que el evento se propague
             }
         }
@@ -319,8 +309,7 @@ public class GestorCables {
 
         // Crear un nuevo cable con las mismas coordenadas pero con el nuevo objeto
         boolean nose = dibujarCable(cable.getStartX(), cable.getStartY(), cable.getEndX(), cable.getEndY(),
-                loc.getFilaActual(),
-                loc.getColumnaActual());
+                loc.getFilaActual(), loc.getColumnaActual());
 
         if (nose) {
             // Actualizar la matriz de conexiones para el nuevo estado del cable
@@ -331,7 +320,6 @@ public class GestorCables {
                 actualizarMatrizConexiones(filaInicio, columnaInicio, valor);
             }
             actualizarMatrizConexiones(filaFin, columnaFin, valor);
-            mostrarMatrizConexiones(); // Mostrar la matriz por consola
             // Actualizar la matriz para el inicio y el fin del nuevo cable
         }
 
@@ -375,7 +363,6 @@ public class GestorCables {
             eliminarEnergiaSinConexiones(protoboard.getMatriz());
             actualizarObjetos(protoboard.getMatriz());
         }
-        mostrarMatrizConexiones(); // Mostrar la matriz por consola
     }
 
     // Método para actualizar la matriz de conexiones
@@ -384,17 +371,6 @@ public class GestorCables {
             matrizConexiones[fila][columna] = valor;
         } else {
             System.err.println("Error: Las coordenadas están fuera de los límites de la matriz.");
-        }
-    }
-
-    // Método para mostrar la matriz de conexiones por consola
-    private void mostrarMatrizConexiones() {
-        System.out.println("Matriz de Conexiones:");
-        for (int i = 0; i < matrizConexiones.length; i++) {
-            for (int j = 0; j < matrizConexiones[i].length; j++) {
-                System.out.print(matrizConexiones[i][j] + " ");
-            }
-            System.out.println();
         }
     }
 
@@ -414,23 +390,48 @@ public class GestorCables {
     }
 
     public void actualizarObjetos(String[][] matrizEnergia) {
-        for (int x = 1; x < 3; x++) {
-            int size = cables.size();
+        int size = cables.size();
 
-            for (int i = size - 1; i >= 0; i--) {
-                Cable cable = cables.get(i);
-                if (cable.getStartX() != 1090) {
-                    procesarCable(cable, matrizEnergia);
-                }
-            }
+        // Crear un pool de hilos con dos hilos concurrentes
+        ExecutorService executor = Executors.newFixedThreadPool(2);
 
-            for (Cable cable : cables) {
-                if (cable.getStartX() != 1090) {
-                    procesarCable(cable, matrizEnergia);
+        // Lista para guardar las tareas (futuras ejecuciones)
+        List<Future<?>> futures = new ArrayList<>();
+
+        // Crear la primera tarea (primer bucle) para ejecutarse dos veces
+        for (int i = 0; i < 2; i++) {
+            futures.add(executor.submit(() -> {
+                for (Cable cable : cables) {
+                    if (cable.getStartX() != 1090) {
+                        procesarCable(cable, matrizEnergia);
+                    }
                 }
+            }));
+        }
+
+        // Crear la segunda tarea (segundo bucle) para ejecutarse dos veces
+        for (int i = 0; i < 2; i++) {
+            futures.add(executor.submit(() -> {
+                for (int j = size - 1; j >= 0; j--) {
+                    Cable cable = cables.get(j);
+                    if (startX != 1090) {
+                        procesarCable(cable, matrizEnergia);
+                    }
+                }
+            }));
+        }
+
+        // Esperar a que todas las tareas terminen
+        for (Future<?> future : futures) {
+            try {
+                future.get(); // Esto espera a que cada tarea se complete
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-        protoboard.imprimirMatriz();
+
+        // Apagar el ExecutorService después de completar las tareas
+        executor.shutdown();
     }
 
     private void procesarCable(Cable cable, String[][] matrizEnergia) {
@@ -443,20 +444,17 @@ public class GestorCables {
         if (objeto != null) {
             String idObjeto = objeto.getId();
             objetoSeleccionado = objeto;
-            System.out.println("Objeto en fila " + filaInicio + " columna " + columnaInicio + ": " + idObjeto);
 
             // Verificación de cables
-            if (idObjeto.equals("Cable_azul") || idObjeto.equals("Cable_rojo")) {
+            if (idObjeto.equals("Cable_azul") || idObjeto.equals("Cable_rojo") || idObjeto.equals("SwitchOn")) {
                 actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
             }
-
             // Verificación de LEDs
             if (idObjeto.equals("Led") && !objeto.isLedActivado()) {
                 if ((matrizEnergia[filaInicio][columnaInicio].equals("+")
                         && matrizEnergia[filaFin][columnaFin].equals("-")) ||
                         (matrizEnergia[filaInicio][columnaInicio].equals("-")
                                 && matrizEnergia[filaFin][columnaFin].equals("+"))) {
-                    System.out.println("Activando LED");
                     eliminarCable(cable, false);
                     objeto.alternarLed();
                     objeto.setLedActivado(true);
@@ -565,5 +563,4 @@ public class GestorCables {
         controlador.actualizarBuses(gridPane);
         controlador.ActualizarProtoboard(gridPane);
     }
-
 }

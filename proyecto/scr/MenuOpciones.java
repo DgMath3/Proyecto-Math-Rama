@@ -7,7 +7,7 @@ import javafx.scene.control.MenuItem;
 public class MenuOpciones {
     private final MenuBar menuBar;
 
-    public MenuOpciones() {
+    public MenuOpciones(GestorCables cables) {
         menuBar = new MenuBar();
         crearMenu();
     }
@@ -23,6 +23,7 @@ public class MenuOpciones {
         // Opción para abrir ayuda
         MenuItem ayudaItem = new MenuItem("Ayuda");
         ayudaItem.setOnAction(e -> mostrarAyuda());
+
 
         // Añadir las opciones al menú
         menuOpciones.getItems().addAll(configuracionesItem, ayudaItem);
