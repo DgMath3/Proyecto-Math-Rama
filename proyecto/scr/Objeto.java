@@ -7,12 +7,10 @@ public class Objeto {
     private Color color;
     private int largo;
     private boolean pasa;
-    private boolean switchState;
     private boolean ledActivado = false;
 
     public Objeto(String id) {
         this.id = id;
-        this.switchState = false;
         cargarImagenYColor();
     }
 
@@ -41,6 +39,12 @@ public class Objeto {
                 imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_off.png");
                 color = Color.BLACK;
                 pasa = false;
+                largo = 4;
+                break;
+            case "SwitchOn":
+                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_on.png");
+                color = Color.BLACK;
+                pasa = true;
                 largo = 4;
                 break;
             case "cablegen+":
@@ -82,20 +86,6 @@ public class Objeto {
 
     public int getLargo() {
         return largo;
-    }
-
-    // Método para alternar la imagen y el estado del Switch
-    public void alternarImagen() {
-        if (id.equals("Switch")) {
-            switchState = !switchState; // Alternar el estado
-            if (switchState) {
-                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_on.png");
-                pasa = true; // El switch está encendido, debe pasar corriente
-            } else {
-                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_off.png");
-                pasa = false; // El switch está apagado, no debe pasar corriente
-            }
-        }
     }
 
     // Método para alternar la imagen

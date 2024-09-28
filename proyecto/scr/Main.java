@@ -27,7 +27,7 @@ public class Main extends Application {
         MenuBarra menuBarra = new MenuBarra(gestorcables);
         
         // Crear una nueva instancia de MenuOpciones
-        MenuOpciones menuOpciones = new MenuOpciones();
+        MenuOpciones menuOpciones = new MenuOpciones(gestorcables);
 
         Bateria bateria = new Bateria(loc, protoboard, controlador, protoboard.getGridPane(), gestorcables);
 
