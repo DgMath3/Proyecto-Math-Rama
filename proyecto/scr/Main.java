@@ -1,3 +1,5 @@
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -6,6 +8,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class Main extends Application {
 
@@ -23,16 +26,27 @@ public class Main extends Application {
         Loc loc = new Loc(protoboard.getGridPane(), Color.BLACK, null);
         GestorCables gestorcables = new GestorCables(protoboard.getGridPane(), loc, protoboard, controlador);
 
+        HiloGestorCables hiloGestor = new HiloGestorCables(gestorcables, protoboard, controlador, protoboard.getGridPane());
+
+        // Crear un Timeline para actualizaciones periódicas
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(100), event -> {
+            // Llama a la lógica de actualización aquí
+            hiloGestor.actualizarObjetos(protoboard.getMatriz());
+        }));
+
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
         // Crear la barra de menú con la instancia de Cablear
         MenuBarra menuBarra = new MenuBarra(gestorcables);
         
         // Crear una nueva instancia de MenuOpciones
-        MenuOpciones menuOpciones = new MenuOpciones(gestorcables);
+        MenuOpciones menuOpciones = new MenuOpciones(gestorcables, protoboard,controlador);
 
         Bateria bateria = new Bateria(loc, protoboard, controlador, protoboard.getGridPane(), gestorcables);
 
         // Crear la imagen de fondo
-        Image fondoImagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\fondo.png");
+        Image fondoImagen = new Image("/resources/fondo.png");
         BackgroundSize backgroundSize = new BackgroundSize(BackgroundSize.AUTO, BackgroundSize.AUTO, false, false, true, true);
         BackgroundImage backgroundImage = new BackgroundImage(fondoImagen, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, backgroundSize);
         Background fondo = new Background(backgroundImage);
@@ -70,6 +84,11 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
+
+        primaryStage.setOnCloseRequest(event -> {
+            hiloGestor.detenerActualizacion(); // Detener el hilo
+            // Aquí puedes realizar otras acciones de limpieza si es necesario
+        });
     }
 
     public static void main(String[] args) {

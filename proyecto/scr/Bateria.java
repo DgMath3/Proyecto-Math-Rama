@@ -30,7 +30,7 @@ public class Bateria {
         this.gestorcables = cablear;
 
         contenedorBateria = new VBox();
-        bateriaImagen = new ImageView(new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\bateria.png")); 
+        bateriaImagen = new ImageView(new Image("/resources/bateria.png")); 
         bateriaImagen.setFitWidth(100); 
         bateriaImagen.setPreserveRatio(true); 
         
@@ -95,7 +95,6 @@ public class Bateria {
                 controlador.actualizarBuses(protoboard.getGridPane());
                 controlador.ActualizarProtoboard(protoboard.getGridPane());
                 protoboard.actualizarMatriz(gridPane);
-                gestorcables.actualizarObjetos(protoboard.getMatriz());
                 System.out.println("Cable conectado y color aplicado.");
             } else {
                 System.out.println("No se pudo conectar el cable (posiblemente hay un cable en la misma posición).");

@@ -14,57 +14,65 @@ public class Objeto {
         cargarImagenYColor();
     }
 
-    @SuppressWarnings("static-access")
     private void cargarImagenYColor() {
         switch (id) {
             case "Cable_azul":
-                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
+                imagen = cargarImagen("/resources/nada.png");
                 color = Color.DARKBLUE;
                 pasa = true;
                 largo = 99;
                 break;
             case "Cable_rojo":
-                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
-                color = color.DARKRED;
+                imagen = cargarImagen("/resources/nada.png");
+                color = Color.DARKRED;
                 pasa = true;
                 largo = 99;
                 break;
             case "Led":
-                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\led_off.png");
+                imagen = cargarImagen("/resources/led_off.png");
                 color = Color.DARKGRAY;
                 pasa = true;
                 largo = 3;
                 break;
             case "Switch":
-                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_off.png");
+                imagen = cargarImagen("/resources/switch_off.png");
                 color = Color.BLACK;
                 pasa = false;
                 largo = 4;
                 break;
             case "SwitchOn":
-                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\switch_on.png");
+                imagen = cargarImagen("/resources/switch_on.png");
                 color = Color.BLACK;
                 pasa = true;
                 largo = 4;
                 break;
             case "cablegen+":
-                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
+                imagen = cargarImagen("/resources/nada.png");
                 color = Color.DARKBLUE;
                 pasa = true;
                 largo = 99;
                 break;
             case "cablegen-":
-                imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\nada.png");
+                imagen = cargarImagen("/resources/nada.png");
                 color = Color.DARKRED;
                 pasa = true;
                 largo = 99;
                 break;
             default:
-                imagen = null;
+                imagen = cargarImagen("/resources/default_image.png"); // Imagen por defecto
                 color = Color.BLACK;
                 pasa = true;
                 largo = 99;
                 break;
+        }
+    }
+
+    private Image cargarImagen(String ruta) {
+        try {
+            return new Image(getClass().getResourceAsStream(ruta));
+        } catch (Exception e) {
+            System.err.println("Error al cargar la imagen: " + e.getMessage());
+            return null; // O asignar una imagen por defecto
         }
     }
 
@@ -88,10 +96,10 @@ public class Objeto {
         return largo;
     }
 
-    // Método para alternar la imagen
     public void alternarLed() {
         if (id.equals("Led")) {
-            imagen = new Image("file:C:\\Users\\ramit\\OneDrive\\Escritorio\\proyecto\\resources\\led_on.png");
+            imagen = ledActivado ? cargarImagen("/resources/led_off.png") : cargarImagen("/resources/led_on.png");
+            ledActivado = !ledActivado; // Alternar el estado
         }
     }
 

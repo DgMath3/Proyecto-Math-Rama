@@ -1,4 +1,3 @@
-import javafx.scene.control.Alert;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -8,16 +7,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.animation.PauseTransition;
-import javafx.application.Platform;
 import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 import javafx.scene.Node;
 
 public class GestorCables {
@@ -31,6 +25,7 @@ public class GestorCables {
     private Controlador controlador;
     private Objeto objetoSeleccionado = null;
     private List<Cable> cables; // Lista para almacenar los cables
+
     private int[][] matrizConexiones; // Matriz para almacenar los puntos de conexión
 
     public GestorCables(GridPane gridPane, Loc loc, Protoboard protoboard, Controlador controlador) {
@@ -97,26 +92,6 @@ public class GestorCables {
         pause.play();
     }
 
-    private boolean verificarPosicion(double startX, double startY, double endX, double endY) {
-        // Verifica la distancia máxima permitida entre los puntos de cable
-        double diferenciaX = Math.abs(endX - startX);
-        double diferenciaY = Math.abs(endY - startY);
-
-        // Calcula la distancia en términos de celdas del protoboard
-        int distanciaCelulasX = (int) Math
-                .round(diferenciaX / (gridPane.getWidth() / gridPane.getColumnConstraints().size()));
-        int distanciaCelulasY = (int) Math
-                .round(diferenciaY / (gridPane.getHeight() / gridPane.getRowConstraints().size()));
-
-        // Verifica que la distancia no exceda el largo del objeto
-        if (objetoSeleccionado != null) {
-            int largoObjeto = objetoSeleccionado.getLargo();
-            return distanciaCelulasX <= largoObjeto && distanciaCelulasY <= largoObjeto;
-        }
-
-        return distanciaCelulasX <= 2 && distanciaCelulasY <= 2; // Valor por defecto si no hay objeto seleccionado
-    }
-
     private boolean existeCableEnPosicion(double startX, double startY, double endX, double endY) {
         int[] inicioL = loc.getfilaccoluma(startX + 10, startY);
         int[] finalL = loc.getfilaccoluma(endX + 10, endY);
@@ -149,11 +124,6 @@ public class GestorCables {
     }
 
     public Boolean dibujarCable(double startX, double startY, double endX, double endY, int fila, int columna) {
-        // Comprobar si el cable está siendo dibujado en el mismo punto
-        if (startX == endX && startY == endY) {
-            System.err.println("Error: El cable no puede ser dibujado en el mismo punto.");
-            return false; // No se dibuja el cable
-        }
         int[] inicioL = loc.getfilaccoluma(endX + 10, endY);
         int[] finalL = loc.getfilaccoluma(startX + 10, startY);
 
@@ -166,6 +136,7 @@ public class GestorCables {
         // Comprobar si ya existe un cable en la posición de inicio o fin
         if (startX != 1090) {
             for (Cable cable : cables) {
+                // Verificar proximidad en el inicio y el fin
                 if ((Math.abs(cable.getStartX() - startX) < 10 && Math.abs(cable.getStartY() - startY) < 10) ||
                         (Math.abs(cable.getEndX() - endX) < 10 && Math.abs(cable.getEndY() - endY) < 10)) {
                     System.err.println("Error: Ya existe un cable en la posición seleccionada.");
@@ -176,38 +147,18 @@ public class GestorCables {
 
         // Comprobar si el cable está siendo colocado en el mismo lugar en el inicio y
         // en el fin
-        if (filaInicio == filaFin && columnaInicio == columnaFin) {
+        if (filaInicio == filaFin && columnaInicio == columnaFin && startX != 1090) {
             System.err.println("Error: El cable no puede ser colocado en el mismo lugar en el inicio y en el fin.");
             return false; // No se dibuja el cable
         }
 
-        // Verifica si el objeto seleccionado es válido y si la posición es válida
-        if (objetoSeleccionado != null) {
-            if (!verificarPosicion(startX, startY, endX, endY)) {
-                // Si la posición no es válida, mostrar un mensaje de error
-                Platform.runLater(() -> {
-                    Alert alerta = new Alert(Alert.AlertType.ERROR);
-                    alerta.setTitle("Error");
-                    alerta.setHeaderText("Error al colocar el objeto");
-                    alerta.setContentText(
-                            "El objeto no se puede colocar en la posición seleccionada. Verifique que esté dentro de un cable válido.");
-                    alerta.showAndWait();
-                });
-
-                // Limpiar el estado de dibujo y seleccionar el objeto
-                drawing = false;
-                cablearActivo = false;
-                objetoSeleccionado = null;
-                return false; // No se dibuja el cable
-            }
-        }
-
+        // Obtener color, imagen y estado de pasa energía del objeto seleccionado
         Paint color = objetoSeleccionado != null ? objetoSeleccionado.getColor() : Color.BLACK;
         ImageView imageView = objetoSeleccionado != null ? new ImageView(objetoSeleccionado.getImagen()) : null;
-        boolean pasa = objetoSeleccionado != null ? objetoSeleccionado.getpasa() : false;
+        boolean pasa = objetoSeleccionado != null && objetoSeleccionado.getpasa();
 
         // Crear el cable con la información proporcionada
-        Cable cable = new Cable(startX, startY, endX, endY, color, imageView, objetoSeleccionado, pasa, filaInicio,
+        Cable cable = new Cable(startX, startY, endX, endY, color, objetoSeleccionado, imageView, pasa, filaInicio,
                 columnaInicio, filaFin, columnaFin);
 
         // Añadir el cable a la lista y al Pane de dibujo
@@ -215,6 +166,7 @@ public class GestorCables {
         drawingPane.getChildren().add(cable.getLinea());
         cable.getLinea().toFront();
 
+        // Manejar la imagen si está presente
         if (imageView != null) {
             double cellSize = gridPane.getWidth() / gridPane.getColumnConstraints().size();
             imageView.setFitWidth(cellSize);
@@ -226,24 +178,24 @@ public class GestorCables {
             drawingPane.getChildren().add(imageView);
             imageView.toFront();
         }
-        int valor = 0;
-        // Actualizar la matriz de conexiones para el inicio y el fin del cable
+
+        // Determinar el valor a actualizar en la matriz de conexiones
+        int valor;
         if (objetoSeleccionado.getId().equals("cablegen+")) {
-            valor = 2;
+            valor = 2; // Cables que generan energía positiva
         } else if (objetoSeleccionado.getId().equals("cablegen-")) {
-            valor = 3;
+            valor = 3; // Cables que generan energía negativa
         } else {
             valor = pasa ? 1 : -1; // Determinar el valor basado en pasa
         }
+
+        // Actualizar la matriz de conexiones para el inicio y el fin del cable
         if (startX != 1090) {
             actualizarMatrizConexiones(filaFin, columnaFin, valor);
         }
         actualizarMatrizConexiones(filaInicio, columnaInicio, valor);
-        if (startX != 1090) {
-            actualizarObjetos(protoboard.getMatriz());
-            actualizarObjetos(protoboard.getMatriz());
-        }
-        return true;
+
+        return true; // Cable dibujado exitosamente
     }
 
     private void manejarclicks(MouseEvent event) {
@@ -336,12 +288,26 @@ public class GestorCables {
         this.cablearActivo = true; // Activar la funcionalidad de cablear al seleccionar un objeto
     }
 
-    // Método para eliminar un cable
     public void eliminarCable(Cable cable, boolean nose) {
+        if (cable == null) {
+            System.err.println("Error: El cable es nulo.");
+            return;
+        }
+
+        if (!cables.contains(cable)) {
+            System.err.println("Error: El cable no está en la lista.");
+            return;
+        }
+
+        // Eliminar la línea de dibujo
         drawingPane.getChildren().remove(cable.getLinea());
-        if (cable.getImageView() != null) {
+
+        // Eliminar la imagen asociada al objeto
+        if (cable.getObjeto() != null && cable.getObjeto().getImagen() != null) {
             drawingPane.getChildren().remove(cable.getImageView());
         }
+
+        // Eliminar el cable de la lista
         cables.remove(cable);
 
         // Actualizar la matriz de conexiones para el inicio y el fin del cable
@@ -353,15 +319,19 @@ public class GestorCables {
         if (filaInicio >= 0 && filaInicio < matrizConexiones.length && columnaInicio >= 0
                 && columnaInicio < matrizConexiones[0].length) {
             actualizarMatrizConexiones(filaInicio, columnaInicio, 0);
+        } else {
+            System.err.println("Error: Coordenadas de inicio fuera de los límites.");
         }
 
         if (filaFin >= 0 && filaFin < matrizConexiones.length && columnaFin >= 0
                 && columnaFin < matrizConexiones[0].length) {
             actualizarMatrizConexiones(filaFin, columnaFin, 0);
+        } else {
+            System.err.println("Error: Coordenadas de fin fuera de los límites.");
         }
+
         if (nose) {
             eliminarEnergiaSinConexiones(protoboard.getMatriz());
-            actualizarObjetos(protoboard.getMatriz());
         }
     }
 
@@ -389,124 +359,8 @@ public class GestorCables {
         return "No hay objeto";
     }
 
-    public void actualizarObjetos(String[][] matrizEnergia) {
-        int size = cables.size();
-
-        // Crear un pool de hilos con dos hilos concurrentes
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-
-        // Lista para guardar las tareas (futuras ejecuciones)
-        List<Future<?>> futures = new ArrayList<>();
-
-        // Crear la primera tarea (primer bucle) para ejecutarse dos veces
-        for (int i = 0; i < 2; i++) {
-            futures.add(executor.submit(() -> {
-                for (Cable cable : cables) {
-                    if (cable.getStartX() != 1090) {
-                        procesarCable(cable, matrizEnergia);
-                    }
-                }
-            }));
-        }
-
-        // Crear la segunda tarea (segundo bucle) para ejecutarse dos veces
-        for (int i = 0; i < 2; i++) {
-            futures.add(executor.submit(() -> {
-                for (int j = size - 1; j >= 0; j--) {
-                    Cable cable = cables.get(j);
-                    if (startX != 1090) {
-                        procesarCable(cable, matrizEnergia);
-                    }
-                }
-            }));
-        }
-
-        // Esperar a que todas las tareas terminen
-        for (Future<?> future : futures) {
-            try {
-                future.get(); // Esto espera a que cada tarea se complete
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Apagar el ExecutorService después de completar las tareas
-        executor.shutdown();
-    }
-
-    private void procesarCable(Cable cable, String[][] matrizEnergia) {
-        int filaInicio = cable.getFilaInicio();
-        int columnaInicio = cable.getColumnaInicio();
-        int filaFin = cable.getFilaFin();
-        int columnaFin = cable.getColumnaFin();
-        Objeto objeto = cable.getObjeto();
-
-        if (objeto != null) {
-            String idObjeto = objeto.getId();
-            objetoSeleccionado = objeto;
-
-            // Verificación de cables
-            if (idObjeto.equals("Cable_azul") || idObjeto.equals("Cable_rojo") || idObjeto.equals("SwitchOn")) {
-                actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
-            }
-            // Verificación de LEDs
-            if (idObjeto.equals("Led") && !objeto.isLedActivado()) {
-                if ((matrizEnergia[filaInicio][columnaInicio].equals("+")
-                        && matrizEnergia[filaFin][columnaFin].equals("-")) ||
-                        (matrizEnergia[filaInicio][columnaInicio].equals("-")
-                                && matrizEnergia[filaFin][columnaFin].equals("+"))) {
-                    eliminarCable(cable, false);
-                    objeto.alternarLed();
-                    objeto.setLedActivado(true);
-                    // Dibujar un nuevo cable con el LED activado
-                    dibujarCable(cable.getStartX(), cable.getStartY(), cable.getEndX(), cable.getEndY(),
-                            cable.getFilaInicio(), cable.getColumnaInicio());
-                }
-            }
-        }
-    }
-
-    private void actualizarEnergia(int filaInicio, int columnaInicio, int filaFin, int columnaFin,
-            String[][] matrizEnergia) {
-        // Actualizar energía en la matriz según el estado de los puntos de inicio y fin
-        if (matrizEnergia[filaInicio][columnaInicio].equals("+") && matrizEnergia[filaFin][columnaFin].equals("|")) {
-            matrizEnergia[filaFin][columnaFin] = "+";
-        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")
-                && matrizEnergia[filaFin][columnaFin].equals("|")) {
-            matrizEnergia[filaFin][columnaFin] = "-";
-        } else if (matrizEnergia[filaFin][columnaFin].equals("+")
-                && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
-            matrizEnergia[filaInicio][columnaInicio] = "+";
-        } else if (matrizEnergia[filaFin][columnaFin].equals("-")
-                && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
-            matrizEnergia[filaInicio][columnaInicio] = "-";
-        }
-        // Después de actualizar la matriz de energía, actualizar los colores en el
-        // protoboard
-        aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
-        protoboard.actualizarMatriz(gridPane);
-    }
-
-    private void aplicarColoresProtoboard(int filaInicio, int columnaInicio, int filaFin, int columnaFin,
-            String[][] matrizEnergia) {
-        // Aplicar el color en el punto de inicio
-        if (matrizEnergia[filaInicio][columnaInicio].equals("+")) {
-            protoboard.cambiarColor(filaInicio, columnaInicio, Color.BLUE);
-        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")) {
-            protoboard.cambiarColor(filaInicio, columnaInicio, Color.RED);
-        }
-
-        // Aplicar el color en el punto de fin
-        if (matrizEnergia[filaFin][columnaFin].equals("+")) {
-            protoboard.cambiarColor(filaFin, columnaFin, Color.BLUE);
-        } else if (matrizEnergia[filaFin][columnaFin].equals("-")) {
-            protoboard.cambiarColor(filaFin, columnaFin, Color.RED);
-        }
-
-        // Actualizar el protoboard y los buses para que reflejen los cambios en las
-        // filas y columnas
-        controlador.actualizarBuses(protoboard.getGridPane());
-        controlador.ActualizarProtoboard(protoboard.getGridPane());
+    public List<Cable> obtenerCables() {
+        return cables; // Retorna la lista de cables
     }
 
     private void cambiarColorCelda(int fila, int columna, Color color, GridPane gridPane) {
@@ -537,12 +391,9 @@ public class GestorCables {
             if (objeto != null && (objeto.getId().equals("cablegen+") || objeto.getId().equals("cablegen-"))) {
                 int filaInicio = cable.getFilaInicio();
                 int columnaInicio = cable.getColumnaInicio();
-                int filaFin = cable.getFilaFin();
-                int columnaFin = cable.getColumnaFin();
 
                 // Agrega las celdas conectadas al conjunto
                 celdasConectadas.add(filaInicio + "," + columnaInicio);
-                celdasConectadas.add(filaFin + "," + columnaFin);
             }
         }
 
@@ -562,5 +413,32 @@ public class GestorCables {
         // Actualiza el protoboard después de los cambios
         controlador.actualizarBuses(gridPane);
         controlador.ActualizarProtoboard(gridPane);
+    }
+
+    public void led(Cable cable, String[][] matrizEnergia) {
+        int filaInicio = cable.getFilaInicio();
+        int columnaInicio = cable.getColumnaInicio();
+        int filaFin = cable.getFilaFin();
+        int columnaFin = cable.getColumnaFin();
+        Objeto objeto = cable.getObjeto();
+        String idObjeto = objeto.getId();
+
+        // Verificación de LEDs
+        if (idObjeto.equals("Led") && !objeto.isLedActivado()) {
+            if ((matrizEnergia[filaInicio][columnaInicio].equals("+")
+                    && matrizEnergia[filaFin][columnaFin].equals("-")) ||
+                    (matrizEnergia[filaInicio][columnaInicio].equals("-")
+                            && matrizEnergia[filaFin][columnaFin].equals("+"))) {
+                eliminarCable(cable, false);
+                objeto.alternarLed();
+                objeto.setLedActivado(true);
+                // Dibujar un nuevo cable con el LED activado
+                dibujarCable(cable.getStartX(), cable.getStartY(), cable.getEndX(), cable.getEndY(),
+                        cable.getFilaInicio(), cable.getColumnaInicio());
+            }
+        }
+        objetoSeleccionado = null;
+        cablearActivo = false;
+        drawing = false;
     }
 }
