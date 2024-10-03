@@ -1,9 +1,12 @@
+import javafx.scene.paint.Color;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.scene.paint.Color;
 
 public class Updown {
+
+    private boolean bateriaEncendida = true; // Inicialmente encendida
 
     // Método para guardar cables en un archivo
     public void guardar(List<Cable> cables, String nombreArchivo) {
@@ -49,11 +52,11 @@ public class Updown {
                     gestorCables.setObjetoSeleccionado(objeto);
                     gestorCables.dibujarCable(startX, startY, endX, endY, filaInicio, columnaInicio);
                     if (id.equals("cablegen+")) {
-                        protoboard.cambiarColor(filaInicio, columnaInicio, Color.BLUE);
+                        protoboard.cambiarColor(filaInicio, columnaInicio, Color.BLUE,bateriaEncendida);
                         controlador.actualizarBuses(protoboard.getGridPane());
                         controlador.ActualizarProtoboard(protoboard.getGridPane());
                     } else if (id.equals("cablegen-")) {
-                        protoboard.cambiarColor(filaInicio, columnaInicio, Color.RED);
+                        protoboard.cambiarColor(filaInicio, columnaInicio, Color.RED, bateriaEncendida);
                         controlador.actualizarBuses(protoboard.getGridPane());
                         controlador.ActualizarProtoboard(protoboard.getGridPane());
                     }
@@ -75,5 +78,15 @@ public class Updown {
         } catch (IOException e) {
             System.err.println("Error al cargar los cables: " + e.getMessage());
         }
+    }
+    // Método para establecer el estado de la batería
+    public void setBateriaEncendida(boolean estado) {
+        this.bateriaEncendida = estado;
+        System.out.println("Estado de la batería actualizado a: " + (estado ? "Encendida" : "Apagada"));
+    }
+
+    // Método para obtener el estado de la batería
+    public boolean isBateriaEncendida() {
+        return this.bateriaEncendida;
     }
 }
