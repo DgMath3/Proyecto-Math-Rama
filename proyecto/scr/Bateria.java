@@ -20,20 +20,26 @@ public class Bateria {
     private Color colorEsperado;
     private GridPane gridPane;
     private GestorCables gestorcables;
-    private double startX, startY; // Coordenadas del botón presionado
+    private HiloGestorCables hiloGestorCables; // Nueva referencia
 
-    public Bateria(Loc loc, Protoboard protoboard, Controlador controlador, GridPane gridPane, GestorCables cablear) {
+    private double startX, startY; // Coordenadas del botón presionado
+    private boolean bateriaEncendida; // Estado de la batería
+
+    // Constructor actualizado para recibir HiloGestorCables
+    public Bateria(Loc loc, Protoboard protoboard, Controlador controlador, GridPane gridPane, GestorCables cablear, HiloGestorCables hiloGestorCables) {
         this.loc = loc;
         this.protoboard = protoboard;
         this.controlador = controlador;
         this.gridPane = gridPane;
         this.gestorcables = cablear;
+        this.hiloGestorCables = hiloGestorCables; // Inicializar la referencia
 
         contenedorBateria = new VBox();
         bateriaImagen = new ImageView(new Image("/resources/bateria.png")); 
         bateriaImagen.setFitWidth(100); 
         bateriaImagen.setPreserveRatio(true); 
-        
+        bateriaEncendida = true; // Estado inicial de la batería encendida
+
         botonVerde = new Button("+");
         botonVerde.setStyle("-fx-background-color: green; -fx-text-fill: white;");
         
@@ -51,12 +57,34 @@ public class Bateria {
     private void configurarEventos() {
         botonVerde.setOnAction(e -> seleccionarColor(Color.BLUE, botonVerde));
         botonRojo.setOnAction(e -> seleccionarColor(Color.RED, botonRojo));
+        
+        // Evento de clic en la imagen de la batería para cambiar entre encendido y apagado
+        bateriaImagen.setOnMouseClicked(event -> {
+            bateriaEncendida = !bateriaEncendida; // Alterna el estado de la batería
+
+            // Cambiar la imagen de la batería según su estado
+            if (bateriaEncendida) {
+                bateriaImagen.setImage(new Image("/resources/bateria.png")); // Imagen de batería encendida
+            } else {
+                bateriaImagen.setImage(new Image("/resources/bateriaOFF.png")); // Imagen de batería apagada
+            }
+
+            // Actualizar la energía de todo el protoboard según el estado de la batería
+            protoboard.cambiarEnergiaDeTodoElProtoboard(bateriaEncendida);
+
+            // Notificar a HiloGestorCables sobre el cambio de estado
+            if (hiloGestorCables != null) {
+                hiloGestorCables.setBateriaEncendida(bateriaEncendida);
+                System.out.println("Notificado a HiloGestorCables sobre el cambio de estado de la batería.");
+            } else {
+                System.out.println("Referencia a HiloGestorCables es nula.");
+            }
+        });
     }
 
     private void seleccionarColor(Color color, Node boton) {
         this.colorEsperado = color;
     
-        // Ajusta las coordenadas según el color seleccionado
         if (color == Color.BLUE) {
             startX = 1090;
             startY = 320;
@@ -64,37 +92,31 @@ public class Bateria {
             startX = 1090;
             startY = 400;
         }
-    
-        // Configura el objeto seleccionado para el cable
+
         Objeto objeto = new Objeto(color == Color.BLUE ? "cablegen+" : "cablegen-");
         gestorcables.setObjetoSeleccionado(objeto);
-    
-        // Configura el evento de clic en el GridPane
         gridPane.setOnMouseClicked(this::manejarClickGridPane);
     }
-    
+
     private void manejarClickGridPane(MouseEvent evento) {
         if (evento.getButton() != javafx.scene.input.MouseButton.PRIMARY) return;
-    
+
         // Obtener las coordenadas de la celda seleccionada
         int fila = loc.getFilaActual();
         int columna = loc.getColumnaActual();
-    
+
         if (fila >= 0 && columna >= 0) {
-            
-    
-            // Dibuja el cable desde el botón hacia la celda seleccionada
             double endX = evento.getX() - 5;
             double endY = evento.getY() - 5;
-    
-            // Verifica y dibuja el cable si no hay conflictos
-            boolean exito = gestorcables.dibujarCable(startX, startY, endX, endY,fila,columna);
+
+            // Verifica y dibuja el cable, siempre permitir la conexión de cables
+            boolean exito = gestorcables.dibujarCable(startX, startY, endX, endY, fila, columna);
             if (exito) {
-                // Aplica el color y actualiza el protoboard
-                protoboard.cambiarColor(fila, columna, colorEsperado);
+                // Aplica el color y actualiza el protoboard solo si la batería está encendida
+                protoboard.cambiarColor(fila, columna, colorEsperado, bateriaEncendida);
                 controlador.actualizarBuses(protoboard.getGridPane());
                 controlador.ActualizarProtoboard(protoboard.getGridPane());
-                protoboard.actualizarMatriz(gridPane);
+                protoboard.actualizarMatriz(gridPane, bateriaEncendida);
                 System.out.println("Cable conectado y color aplicado.");
             } else {
                 System.out.println("No se pudo conectar el cable (posiblemente hay un cable en la misma posición).");
@@ -102,9 +124,9 @@ public class Bateria {
         } else {
             System.out.println("No se ha seleccionado una celda válida.");
         }
+
         finalizarAccion(); // Finaliza la acción después de aplicar el color
     }
-    
 
     private void finalizarAccion() {
         gridPane.setOnMouseClicked(null); // Elimina el manejador de eventos del mouse
