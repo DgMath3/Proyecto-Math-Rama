@@ -43,7 +43,7 @@ public class Main extends Application {
         // Crear una nueva instancia de MenuOpciones
         MenuOpciones menuOpciones = new MenuOpciones(gestorcables, protoboard,controlador);
 
-        Bateria bateria = new Bateria(loc, protoboard, controlador, protoboard.getGridPane(), gestorcables);
+        Bateria bateria = new Bateria(loc, protoboard, controlador, protoboard.getGridPane(), gestorcables, hiloGestor);
 
         // Crear la imagen de fondo
         Image fondoImagen = new Image("/resources/fondo.png");
