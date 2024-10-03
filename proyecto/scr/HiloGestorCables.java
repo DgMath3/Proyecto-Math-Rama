@@ -4,6 +4,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
@@ -14,11 +15,12 @@ public class HiloGestorCables {
     private volatile boolean running; // Indica si el hilo está en ejecución
     private Protoboard protoboard;
     private Controlador controlador;
+    private boolean bateriaEncendida = true;
 
     // Constructor
     public HiloGestorCables(GestorCables gestorCables, Protoboard protoboard, Controlador controlador, GridPane gridPane) {
         this.gestorCables = gestorCables;
-        this.scheduler = Executors.newScheduledThreadPool(20); // 1 hilo programado
+        this.scheduler = Executors.newScheduledThreadPool(40); // 1 hilo programado
         this.running = false; // Inicialmente no está corriendo
         this.gridPane = gridPane;
         this.protoboard = protoboard; // Inicializar protoboard
@@ -135,46 +137,65 @@ public class HiloGestorCables {
     }
     
 
+    // Método para actualizar energía respetando el estado de la batería
     private void actualizarEnergia(int filaInicio, int columnaInicio, int filaFin, int columnaFin,
-            String[][] matrizEnergia) {
-        // Actualizar energía en la matriz según el estado de los puntos de inicio y fin
-        if (matrizEnergia[filaInicio][columnaInicio].equals("+") && matrizEnergia[filaFin][columnaFin].equals("|")) {
-            matrizEnergia[filaFin][columnaFin] = "+";
-        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")
-                && matrizEnergia[filaFin][columnaFin].equals("|")) {
-            matrizEnergia[filaFin][columnaFin] = "-";
-        } else if (matrizEnergia[filaFin][columnaFin].equals("+")
-                && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
-            matrizEnergia[filaInicio][columnaInicio] = "+";
-        } else if (matrizEnergia[filaFin][columnaFin].equals("-")
-                && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
-            matrizEnergia[filaInicio][columnaInicio] = "-";
+                                   String[][] matrizEnergia) {
+        if (!bateriaEncendida) {
+            // Si la batería está apagada, no transmitir energía positiva ni negativa
+            matrizEnergia[filaFin][columnaFin] = "|";
+            matrizEnergia[filaInicio][columnaInicio] = "|";
+        } else {
+            // Si la batería está encendida, comportamiento normal
+            if (matrizEnergia[filaInicio][columnaInicio].equals("+") &&
+                matrizEnergia[filaFin][columnaFin].equals("|")) {
+                matrizEnergia[filaFin][columnaFin] = "+";
+            } else if (matrizEnergia[filaInicio][columnaInicio].equals("-") &&
+                       matrizEnergia[filaFin][columnaFin].equals("|")) {
+                matrizEnergia[filaFin][columnaFin] = "-";
+            } else if (matrizEnergia[filaFin][columnaFin].equals("+") &&
+                       matrizEnergia[filaInicio][columnaInicio].equals("|")) {
+                matrizEnergia[filaInicio][columnaInicio] = "+";
+            } else if (matrizEnergia[filaFin][columnaFin].equals("-") &&
+                       matrizEnergia[filaInicio][columnaInicio].equals("|")) {
+                matrizEnergia[filaInicio][columnaInicio] = "-";
+            }
         }
-        // Después de actualizar la matriz de energía, actualizar los colores en el
-        // protoboard
+
+        // Aplicar colores al protoboard después de la actualización de energía
         aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
-        protoboard.actualizarMatriz(gridPane);
+        protoboard.actualizarMatriz(gridPane, bateriaEncendida);
     }
 
     private void aplicarColoresProtoboard(int filaInicio, int columnaInicio, int filaFin, int columnaFin,
             String[][] matrizEnergia) {
         // Aplicar el color en el punto de inicio
         if (matrizEnergia[filaInicio][columnaInicio].equals("+")) {
-            protoboard.cambiarColor(filaInicio, columnaInicio, Color.BLUE);
+            protoboard.cambiarColor(filaInicio, columnaInicio, Color.BLUE, bateriaEncendida);
         } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")) {
-            protoboard.cambiarColor(filaInicio, columnaInicio, Color.RED);
+            protoboard.cambiarColor(filaInicio, columnaInicio, Color.RED, bateriaEncendida);
         }
 
         // Aplicar el color en el punto de fin
         if (matrizEnergia[filaFin][columnaFin].equals("+")) {
-            protoboard.cambiarColor(filaFin, columnaFin, Color.BLUE);
+            protoboard.cambiarColor(filaFin, columnaFin, Color.BLUE, bateriaEncendida);
         } else if (matrizEnergia[filaFin][columnaFin].equals("-")) {
-            protoboard.cambiarColor(filaFin, columnaFin, Color.RED);
+            protoboard.cambiarColor(filaFin, columnaFin, Color.RED, bateriaEncendida);
         }
 
         // Actualizar el protoboard y los buses para que reflejen los cambios en las
         // filas y columnas
         controlador.actualizarBuses(protoboard.getGridPane());
         controlador.ActualizarProtoboard(protoboard.getGridPane());
+    }
+
+      // Método para establecer el estado de la batería
+      public void setBateriaEncendida(boolean estado) {
+        this.bateriaEncendida = estado;
+        System.out.println("Estado de la batería actualizado a: " + (estado ? "Encendida" : "Apagada"));
+    }
+
+    // Método para obtener el estado de la batería
+    public boolean isBateriaEncendida() {
+        return this.bateriaEncendida;
     }
 }
