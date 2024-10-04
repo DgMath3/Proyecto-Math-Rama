@@ -22,18 +22,19 @@ public class MenuBarra {
         MenuItem led = new MenuItem("Led");
         led.setOnAction(e -> seleccionarObjeto("Led"));
 
-        MenuItem siwtch = new MenuItem("Switch");
+        MenuItem siwtch = new MenuItem("Switch (pequeño)");
         siwtch.setOnAction(e -> seleccionarObjeto("Switch"));
 
-        menuAgregar.getItems().addAll(cable_r, cable_b, led, siwtch);
+        MenuItem resistor = new MenuItem("resistor");
+        resistor.setOnAction(e -> seleccionarObjeto("resistor"));
+
+        menuAgregar.getItems().addAll(cable_r, cable_b, led, siwtch, resistor);
         menuBar.getMenus().add(menuAgregar);
     }
 
     private void seleccionarObjeto(String idObjeto) {
         Objeto objeto = new Objeto(idObjeto); // Crear un objeto con el id seleccionado
         cablear.setObjetoSeleccionado(objeto); // Establecer el objeto seleccionado en Cablear
-
-        cablear.configurarEventos();
 
         if (onObjetoSeleccionado != null) {
             onObjetoSeleccionado.run();

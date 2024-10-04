@@ -7,7 +7,6 @@ public class Objeto {
     private Color color;
     private int largo;
     private boolean pasa;
-    private boolean ledActivado = false;
 
     public Objeto(String id) {
         this.id = id;
@@ -31,7 +30,7 @@ public class Objeto {
             case "Led":
                 imagen = cargarImagen("/resources/led_off.png");
                 color = Color.DARKGRAY;
-                pasa = true;
+                pasa = false;
                 largo = 3;
                 break;
             case "Switch":
@@ -49,13 +48,19 @@ public class Objeto {
             case "cablegen+":
                 imagen = cargarImagen("/resources/nada.png");
                 color = Color.DARKBLUE;
-                pasa = true;
+                pasa = false;
                 largo = 99;
+                break;
+            case "resistor":
+                imagen = cargarImagen("/resources/resistor.png");
+                color = Color.DARKGRAY;
+                pasa = true;
+                largo = 4;
                 break;
             case "cablegen-":
                 imagen = cargarImagen("/resources/nada.png");
                 color = Color.DARKRED;
-                pasa = true;
+                pasa = false;
                 largo = 99;
                 break;
             default:
@@ -94,20 +99,5 @@ public class Objeto {
 
     public int getLargo() {
         return largo;
-    }
-
-    public void alternarLed() {
-        if (id.equals("Led")) {
-            imagen = ledActivado ? cargarImagen("/resources/led_off.png") : cargarImagen("/resources/led_on.png");
-            ledActivado = !ledActivado; // Alternar el estado
-        }
-    }
-
-    public boolean isLedActivado() {
-        return ledActivado;
-    }
-
-    public void setLedActivado(boolean ledActivado) {
-        this.ledActivado = ledActivado;
     }
 }

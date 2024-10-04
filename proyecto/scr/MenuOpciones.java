@@ -1,12 +1,6 @@
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceDialog;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextInputDialog;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -34,7 +28,7 @@ public class MenuOpciones {
         crearMenu();
     }
 
-    // Crear el menú con las opciones de guardar y cargar
+    // Crear el menú con las opciones de guardar, cargar y borrar
     private void crearMenu() {
         Menu menuOpciones = new Menu("Opciones");
 
@@ -44,7 +38,10 @@ public class MenuOpciones {
         MenuItem cargarItem = new MenuItem("Cargar");
         cargarItem.setOnAction(e -> cargar());
 
-        menuOpciones.getItems().addAll(guardarItem, cargarItem);
+        MenuItem borrarItem = new MenuItem("Borrar datos");
+        borrarItem.setOnAction(e -> borrarDatosGuardados()); // Nuevo item para borrar
+
+        menuOpciones.getItems().addAll(guardarItem, cargarItem, borrarItem);
 
         menuBar.getMenus().add(menuOpciones);
     }
@@ -125,9 +122,50 @@ public class MenuOpciones {
                     mostrarAlerta(AlertType.INFORMATION, "Cargar", "Éxito",
                             "Cables cargados exitosamente desde " + rutaArchivo);
                 } else {
-                    // Si el usuario no acepta, puedes mostrar un mensaje opcional
                     mostrarAlerta(AlertType.INFORMATION, "Carga cancelada", "Información",
                             "No se han cargado nuevos cables.");
+                }
+            });
+        });
+    }
+
+    // Nuevo método para borrar archivos guardados
+    private void borrarDatosGuardados() {
+        Platform.runLater(() -> {
+            File directorio = new File(directorioCables);
+            File[] archivos = directorio.listFiles((dir, name) -> name.endsWith(".dat"));
+
+            if (archivos == null || archivos.length == 0) {
+                mostrarAlerta(AlertType.ERROR, "Borrar", "Error", "No hay archivos disponibles para borrar.");
+                return;
+            }
+
+            List<String> nombresArchivos = new ArrayList<>();
+            for (File archivo : archivos) {
+                nombresArchivos.add(archivo.getName().replace(".dat", ""));
+            }
+
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(nombresArchivos.get(0), nombresArchivos);
+            dialog.setTitle("Borrar Cables");
+            dialog.setHeaderText("Seleccione el archivo a borrar");
+            dialog.setContentText("Archivos disponibles:");
+
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(nombreArchivo -> {
+                Alert confirmacion = new Alert(AlertType.CONFIRMATION);
+                confirmacion.setTitle("Confirmar borrado");
+                confirmacion.setHeaderText("¿Está seguro de que desea borrar este archivo?");
+                confirmacion.setContentText("Esta acción no se puede deshacer.");
+
+                Optional<ButtonType> respuesta = confirmacion.showAndWait();
+                if (respuesta.isPresent() && respuesta.get() == ButtonType.OK) {
+                    String rutaArchivo = directorioCables + File.separator + nombreArchivo + ".dat";
+                    File archivoAEliminar = new File(rutaArchivo);
+                    if (archivoAEliminar.delete()) {
+                        mostrarAlerta(AlertType.INFORMATION, "Borrar", "Éxito", "Archivo borrado exitosamente.");
+                    } else {
+                        mostrarAlerta(AlertType.ERROR, "Borrar", "Error", "No se pudo borrar el archivo.");
+                    }
                 }
             });
         });

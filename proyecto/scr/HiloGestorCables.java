@@ -20,7 +20,7 @@ public class HiloGestorCables {
     // Constructor
     public HiloGestorCables(GestorCables gestorCables, Protoboard protoboard, Controlador controlador, GridPane gridPane) {
         this.gestorCables = gestorCables;
-        this.scheduler = Executors.newScheduledThreadPool(40); // 1 hilo programado
+        this.scheduler = Executors.newScheduledThreadPool(1); // 1 hilo programado
         this.running = false; // Inicialmente no está corriendo
         this.gridPane = gridPane;
         this.protoboard = protoboard; // Inicializar protoboard
@@ -53,7 +53,7 @@ public class HiloGestorCables {
         running = false;
         scheduler.shutdown();
         try {
-            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {  // Espera un máximo de 5 segundos para que los hilos terminen
+            if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {  // Espera un máximo de 5 segundos para que los hilos terminen
                 scheduler.shutdownNow();  // Forzar la detención si no termina
             }
         } catch (InterruptedException e) {
@@ -72,71 +72,47 @@ public class HiloGestorCables {
     
         // Filtrar cables que no sean de tipo "cableargen+" o "cableargen-"
         List<Cable> cablesFiltrados = cables.stream()
-                .filter(cable -> !"cableargen+".equals(cable.getObjeto().getId())
-                        && !"cableargen-".equals(cable.getObjeto().getId()))
+                .filter(cable -> !("cableargen+".equals(cable.getObjeto().getId()) ||
+                                   "cableargen-".equals(cable.getObjeto().getId())))
                 .collect(Collectors.toList());
     
-        // Crear un pool de hilos con hasta 7 hilos concurrentes
-        ExecutorService executor = Executors.newFixedThreadPool(7);
+        // Crear un pool de hilos con hasta 10 hilos concurrentes
+        ExecutorService executor = Executors.newFixedThreadPool(5);
     
         // Enviar una tarea por cada cable filtrado
-        for (Cable cable : cablesFiltrados) {
-            if (cable.getStartX() != 1090) {
-                executor.submit(() -> {
-                    try {
-                        procesarCable(cable, matrizEnergia);
-                    } catch (Exception e) {
-                        e.printStackTrace(); // Manejar excepciones individuales aquí
-                    }
-                });
-                
-                // Introducir un desfase de 1 ms antes de enviar la siguiente tarea
-                try {
-                    Thread.sleep(1); // Desfase de 1 ms
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // Restaura el estado de interrupción
-                    break; // Salir del bucle si se interrumpe el hilo
-                }
+        cablesFiltrados.forEach(cable -> executor.submit(() -> {
+            try {
+                procesarCable(cable, matrizEnergia);
+            } catch (Exception e) {
+                e.printStackTrace(); // Manejar excepciones individuales aquí
             }
-        }
+        }));
     
         // Apagar el ExecutorService después de completar las tareas
         executor.shutdown();
+        try {
+            // Esperar a que todas las tareas se completen
+            if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
+                executor.shutdownNow(); // Forzar la detención si no se completa en el tiempo especificado
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow(); // Restaura el estado de interrupción
+        }
     }
     
-    
-
-    private void procesarCable(Cable cable, String[][] matrizEnergia) {
-        if (cable == null || matrizEnergia == null) {
-            System.out.println("Cable o matriz de energía son nulos.");
-            return; // Salir si el cable o la matriz son nulos
-        }
-    
+    private void procesarCable(Cable cable, String[][] matrizEnergia) {    
         int filaInicio = cable.getFilaInicio();
         int columnaInicio = cable.getColumnaInicio();
         int filaFin = cable.getFilaFin();
         int columnaFin = cable.getColumnaFin();
         Objeto objeto = cable.getObjeto();
     
-        if (objeto == null) {
-            System.out.println("El objeto del cable es nulo.");
-            return; // Salir si el objeto es nulo
-        }
-    
-        String idObjeto = objeto.getId();
-    
         // Verificación de cables
-        if (idObjeto.equals("Cable_azul") || idObjeto.equals("Cable_rojo") || idObjeto.equals("SwitchOn")) {
+        if (objeto.getpasa()) {
             actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
-        }
-    
-        // Verificación de LEDs
-        if (idObjeto.equals("Led") && !objeto.isLedActivado()) {
-            gestorCables.led(cable, matrizEnergia);
         }
     }
     
-
     // Método para actualizar energía respetando el estado de la batería
     private void actualizarEnergia(int filaInicio, int columnaInicio, int filaFin, int columnaFin,
                                    String[][] matrizEnergia) {
