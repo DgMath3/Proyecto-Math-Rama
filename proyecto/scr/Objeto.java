@@ -54,8 +54,8 @@ public class Objeto {
             case "resistor":
                 imagen = cargarImagen("/resources/resistor.png");
                 color = Color.DARKGRAY;
-                pasa = true;
-                largo = 4;
+                pasa = false;
+                largo = 1;
                 break;
             case "cablegen-":
                 imagen = cargarImagen("/resources/nada.png");
@@ -64,7 +64,7 @@ public class Objeto {
                 largo = 99;
                 break;
             default:
-                imagen = cargarImagen("/resources/default_image.png"); // Imagen por defecto
+                imagen = cargarImagen("/resources/nada.png"); // Imagen por defecto
                 color = Color.BLACK;
                 pasa = true;
                 largo = 99;

@@ -1,15 +1,14 @@
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.beans.value.ChangeListener;
 
 public class Main extends Application {
 
@@ -21,22 +20,22 @@ public class Main extends Application {
 
         // Crear la escena
         StackPane root = new StackPane();
-        Scene scene = new Scene(root, 100, 50); // Ajusta el tamaño según tus necesidades
+        Scene scene = new Scene(root, 1000, 600); // Ajusta el tamaño inicial según tus necesidades
+
+        // Establecer un color de fondo sólido en el StackPane
+        root.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, CornerRadii.EMPTY, Insets.EMPTY)));
 
         // Crear la instancia de Cablear con el Protoboard y el Loc
         Loc loc = new Loc(protoboard.getGridPane(), Color.BLACK, null);
         GestorCables gestorcables = new GestorCables(protoboard.getGridPane(), loc, protoboard, controlador);
 
-        HiloGestorCables hiloGestor = new HiloGestorCables(gestorcables, protoboard, controlador, protoboard.getGridPane());
+        HiloGestorCables hiloGestor = new HiloGestorCables(gestorcables, protoboard, controlador,
+                protoboard.getGridPane());
 
-        // Crear un Timeline para actualizaciones periódicas
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(100), event -> {
-            // Llama a la lógica de actualización aquí
-            hiloGestor.actualizarObjetos(protoboard.getMatriz());
-        }));
+        VerificadorConexiones verificador = new VerificadorConexiones(gestorcables);
 
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+        // Iniciar la búsqueda continua
+        verificador.iniciarBusquedaContinua(protoboard.getMatriz());
 
         // Crear la barra de menú con la instancia de Cablear
         MenuBarra menuBarra = new MenuBarra(gestorcables);
@@ -46,16 +45,9 @@ public class Main extends Application {
 
         Bateria bateria = new Bateria(loc, protoboard, controlador, protoboard.getGridPane(), gestorcables, hiloGestor);
 
-        // Crear la imagen de fondo como ImageView
-        Image fondoImagen = new Image("/resources/fondo1.png");
-        ImageView imageView = new ImageView(fondoImagen);
-        imageView.setPreserveRatio(true); // Mantener la proporción
-        imageView.setFitWidth(1340); // Ajustar el ancho al tamaño deseado
-        imageView.setFitHeight(840); // Ajustar la altura al tamaño deseado
-
-        // Crear un StackPane para contener la imagen de fondo
-        StackPane backgroundPane = new StackPane();
-        backgroundPane.getChildren().add(imageView);
+        // Crear un AnchorPane para organizar los componentes
+        AnchorPane anchorPane = new AnchorPane();
+        anchorPane.setPrefSize(1000, 600); // Tamaño preferido del AnchorPane
 
         // Crear un VBox para organizar los componentes verticalmente
         VBox mainLayout = new VBox();
@@ -75,37 +67,55 @@ public class Main extends Application {
         contentLayout.setAlignment(Pos.CENTER);
         contentLayout.setSpacing(50); // Espacio entre el protoboard y la batería
 
-        // Añadir el protoboard y la batería al HBox
+        // Establecer un ancho fijo para el GridPane
+        protoboard.getGridPane().setPrefWidth(1000); // Ancho fijo deseado
+
+        // Añadir el GridPane y la batería al HBox
         contentLayout.getChildren().addAll(protoboard.getGridPane(), bateria.getContenedorBateria());
 
         // Añadir el HBox al VBox principal
         mainLayout.getChildren().add(contentLayout);
 
-        // Añadir el VBox al StackPane raíz
-        root.getChildren().addAll(backgroundPane, mainLayout);
+        // Añadir el VBox al AnchorPane
+        anchorPane.getChildren().addAll(mainLayout);
+
+        // Establecer anclajes para que el AnchorPane se ajuste a la ventana
+        AnchorPane.setTopAnchor(mainLayout, 0.0);
+        AnchorPane.setLeftAnchor(mainLayout, 0.0);
+        AnchorPane.setRightAnchor(mainLayout, 0.0);
+        AnchorPane.setBottomAnchor(mainLayout, 0.0);
+
+        // Añadir el AnchorPane al StackPane raíz
+        root.getChildren().add(anchorPane);
 
         // Configurar el Stage
         primaryStage.setTitle("Simulador de Protoboard");
         primaryStage.setScene(scene);
+        primaryStage.setMinWidth(1000); // Establecer ancho mínimo de la ventana
+        primaryStage.setMinHeight(600); // Establecer altura mínima de la ventana
         primaryStage.setResizable(true); // Permitir maximizar
         primaryStage.show();
 
+        hiloGestor.iniciarActualizacionContinua(protoboard.getMatriz(),250);
+
+        // Manejar el cierre de la aplicación
         primaryStage.setOnCloseRequest(event -> {
-            hiloGestor.detenerActualizacion(); // Detener el hilo
-            // Aquí puedes realizar otras acciones de limpieza si es necesario
+            hiloGestor.detenerActualizacion();
+            verificador.detenerBusqueda();
         });
 
-        // Evento para ajustar la imagen al cambiar el tamaño de la ventana
-        scene.widthProperty().addListener((observable, oldValue, newValue) -> {
-            // Ajustar la posición del ImageView
-            double offset = 100; //valor para mover la imagen hacia arriba o abajo
-            imageView.setTranslateY(-offset); // Mover la imagen hacia arriba
-        });
+        primaryStage.widthProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                // Crear una pausa de 1 segundo
+                PauseTransition pause = new PauseTransition(Duration.millis(100));
 
-        scene.heightProperty().addListener((observable, oldValue, newValue) -> {
-            // Ajustar la posición del ImageView
-            double offset = 75; // valor para mover la imagen hacia arriba o abajo
-            imageView.setTranslateY(-offset); // Mover la imagen hacia arriba
+                // Al terminar la pausa, llamar a actualizar()
+                pause.setOnFinished(event -> gestorcables.actualizar());
+
+                // Iniciar la pausa
+                pause.play();
+            }
         });
     }
 
