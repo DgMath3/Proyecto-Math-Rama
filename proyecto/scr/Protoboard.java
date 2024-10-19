@@ -1,11 +1,15 @@
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.Node;
+import javafx.scene.image.Image;
 
 public class Protoboard {
 
@@ -25,17 +29,17 @@ public class Protoboard {
 
     public void cambiarColor(int fila, int columna, Color color, boolean bateriaEncendida) {
         Circle punto = (Circle) gridPane.getChildren().get(fila * numColumnas + columna);
-        
+
         // Si la batería está apagada, solo aplicar energía neutra
         if (!bateriaEncendida) {
             punto.setFill(Color.LIGHTGRAY); // Visualmente representamos como neutro
             matriz[fila][columna] = "|"; // Energía neutra en la matriz
             return;
         }
-    
+
         // Si la batería está encendida, aplica el color normalmente
         punto.setFill(color);
-    
+
         // Actualizar la matriz dependiendo del color aplicado
         if (color.equals(Color.BLUE)) {
             matriz[fila][columna] = "+";
@@ -45,79 +49,49 @@ public class Protoboard {
             matriz[fila][columna] = "|"; // Neutro si no es ni rojo ni azul
         }
     }
-    
 
     private void configurarGridPane() {
-        gridPane.setPrefSize(1000, 800);
-
+        gridPane.setPrefSize(800, 600);
+    
+        // Establecer tamaño fijo para las columnas y filas
+        double anchoColumna = 100; // Ancho fijo de cada columna
+        double altoFila = 80; // Alto fijo de cada fila
+        
         for (int i = 0; i < numColumnas; i++) {
             ColumnConstraints col = new ColumnConstraints();
-            col.setPercentWidth(100.0 / numColumnas);
+            col.setPrefWidth(anchoColumna); // Ancho fijo
             gridPane.getColumnConstraints().add(col);
         }
-
+    
         for (int i = 0; i < numFilas; i++) {
             RowConstraints row = new RowConstraints();
-            row.setPercentHeight(100.0 / numFilas);
+            row.setPrefHeight(altoFila); // Alto fijo
             gridPane.getRowConstraints().add(row);
         }
-
+    
         gridPane.setAlignment(Pos.CENTER);
         gridPane.setPadding(new Insets(10));
+    
+        // Establecer imagen de fondo
+        Image imagenFondo = new Image("/resources/fondo1.png");
+        BackgroundImage backgroundImage = new BackgroundImage(imagenFondo,
+                null, null, null, new BackgroundSize(1000, 800, false, false, false, true));
+        gridPane.setBackground(new Background(backgroundImage));
     }
-
+    
     private void crearProtoboard() {
         double puntoTamaño = 10;
         double puntoEspacio = (espacio - puntoTamaño) / 2;
 
         for (int i = 0; i < numFilas; i++) {
             for (int j = 0; j < numColumnas; j++) {
-                final int filaFinal = i;  // Variable final para lambda
-                final int columnaFinal = j;  // Variable final para lambda
 
                 Circle punto = new Circle(puntoTamaño, Color.LIGHTGRAY);
-                // Asignar evento de clic
-                punto.setOnMouseClicked(event -> manejarClickEnBus(punto, filaFinal, columnaFinal));
 
                 gridPane.add(punto, j, i);
                 GridPane.setMargin(punto, new Insets(puntoEspacio));
             }
         }
-    }
-
-    private void manejarClickEnBus(Circle punto, int fila, int columna) {
-        Color colorActual = (Color) punto.getFill();
-        System.out.println("Click en bus: Fila " + fila + " Columna " + columna + " Color: " + colorActual);
-
-        if (colorActual.equals(Color.GREEN) || colorActual.equals(Color.RED)) {
-            if (fila == 0 || fila == 1) { // Filas de bus superiores
-                for (int i = 2; i <= 6; i++) {  // Filas 3 a 6
-                    Circle puntoColumna = obtenerPuntoEnFilaColumna(i, columna);
-                    if (puntoColumna != null) {
-                        puntoColumna.setFill(colorActual);
-                    }
-                }
-            } else if (fila == 12 || fila == 13) { // Filas de bus inferiores
-                for (int i = 7; i <= 11; i++) {  // Filas 8 a 11
-                    Circle puntoColumna = obtenerPuntoEnFilaColumna(i, columna);
-                    if (puntoColumna != null) {
-                        puntoColumna.setFill(colorActual);
-                    }
-                }
-            }
-        }
-    }
-
-    private Circle obtenerPuntoEnFilaColumna(int fila, int columna) {
-        for (Node nodo : gridPane.getChildren()) {
-            Integer rowIndex = GridPane.getRowIndex(nodo);
-            Integer colIndex = GridPane.getColumnIndex(nodo);
-
-            if (rowIndex != null && rowIndex.equals(fila) && colIndex != null && colIndex.equals(columna)) {
-                return (Circle) nodo;
-            }
-        }
-        return null;
     }
 
     public GridPane getGridPane() {
@@ -133,10 +107,10 @@ public class Protoboard {
         for (int i = 0; i < numFilas; i++) {
             for (int j = 0; j < numColumnas; j++) {
                 Node node = obtenerhoyito(gridPane, i, j);
-                if (node != null && node instanceof Circle) { 
+                if (node != null && node instanceof Circle) {
                     Circle punto = (Circle) node;
-                    Color color = (Color) punto.getFill(); 
-                    
+                    Color color = (Color) punto.getFill();
+
                     if (bateriaEncendida) {
                         if (color.equals(Color.BLUE)) {
                             matriz[i][j] = "+"; // Energía positiva
@@ -153,8 +127,6 @@ public class Protoboard {
             }
         }
     }
-    
-    
 
     private Node obtenerhoyito(GridPane gridPane, int row, int column) {
         for (Node nodo : gridPane.getChildren()) {
@@ -166,27 +138,28 @@ public class Protoboard {
         }
         return null;
     }
-    public String[][] getMatriz(){
+
+    public String[][] getMatriz() {
         return matriz;
     }
-    
+
     private void inicializarMatrizEnergia(String[][] matrizEnergia) {
         for (int i = 0; i < matrizEnergia.length; i++) {
             for (int j = 0; j < matrizEnergia[i].length; j++) {
                 if (matrizEnergia[i][j] == null) {
-                    matrizEnergia[i][j] = "|";  // Valor por defecto si no hay energía.
+                    matrizEnergia[i][j] = "|"; // Valor por defecto si no hay energía.
                 }
             }
         }
     }
 
-
-    // Método para cambiar la energía de todo el protoboard según el estado de la batería
+    // Método para cambiar la energía de todo el protoboard según el estado de la
+    // batería
     public void cambiarEnergiaDeTodoElProtoboard(boolean bateriaEncendida) {
         for (int i = 0; i < numFilas; i++) {
             for (int j = 0; j < numColumnas; j++) {
                 Node node = obtenerhoyito(gridPane, i, j);
-                if (node != null && node instanceof Circle) { 
+                if (node != null && node instanceof Circle) {
                     Circle punto = (Circle) node;
                     if (!bateriaEncendida) {
                         punto.setFill(Color.LIGHTGRAY); // Color visual para energía neutra
@@ -208,7 +181,8 @@ public class Protoboard {
                 }
             }
         }
-        System.out.println("Energía de todo el protoboard actualizada a: " + (bateriaEncendida ? "Encendida" : "Apagada"));
+        System.out.println(
+                "Energía de todo el protoboard actualizada a: " + (bateriaEncendida ? "Encendida" : "Apagada"));
     }
-    
+
 }

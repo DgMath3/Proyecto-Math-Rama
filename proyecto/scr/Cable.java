@@ -16,16 +16,18 @@ public class Cable {
     private final int columnaInicio; // Nueva variable para la columna de inicio
     private final int filaFin; // Nueva variable para la fila de fin
     private final int columnaFin; // Nueva variable para la columna de fin
+    private final double valor;
 
-    public Cable(double startX, double startY, double endX, double endY, Paint color, Objeto objeto,ImageView imageView, boolean pasaEnergia, int filaInicio, int columnaInicio, int filaFin, int columnaFin) {
+    public Cable(double startX, double startY, double endX, double endY, Paint color, Objeto objeto,ImageView imageView, boolean pasaEnergia, int filaInicio, int columnaInicio, int filaFin, int columnaFin, double valor) {
         this.linea = new Line(startX, startY, endX, endY);
         this.linea.setStroke(color);
-        this.linea.setStrokeWidth(7); // Ajusta el grosor aquí
+        this.linea.setStrokeWidth(8); // Ajusta el grosor aquí
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
         this.imageView = imageView;
+        this.valor = valor;
 
         this.objeto = objeto; // Inicializar el objeto
         this.pasaEnergia = pasaEnergia;
@@ -46,12 +48,12 @@ public class Cable {
     public double getStartX() { return linea.getStartX();}
     public double getStartY() { return linea.getStartY();}
     public double getEndX() { return linea.getEndX();}
-    public double getEndY() {return linea.getEndY();}
+    public double getEndY() { return linea.getEndY();}
     public double StartX() { return startX; }
     public double StartY() {return startY;}
-    public double EndX() {return endX;}
-    public double EndY() {return endY;}
-    public Line getLinea() {return linea;}
+    public double EndX() { return endX;}
+    public double EndY() { return endY;}
+    public Line getLinea() { return linea;}
     public boolean pasa() { return pasaEnergia;}
     public Objeto getObjeto() { return objeto;}
     public ImageView getImageView() { return imageView;}
@@ -59,4 +61,5 @@ public class Cable {
     public int getColumnaInicio() { return columnaInicio;}
     public int getFilaFin() { return filaFin;}
     public int getColumnaFin() { return columnaFin;}
+    public double getvalor() { return valor;}
 }
