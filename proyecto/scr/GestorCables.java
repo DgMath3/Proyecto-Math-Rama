@@ -1,3 +1,4 @@
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -66,37 +67,50 @@ public class GestorCables {
             return; // Si no está activo o no hay objeto seleccionado, no hace nada
         }
 
-        // Esperar brevemente para asegurar que el GridPane se actualice
-        PauseTransition pause = new PauseTransition(Duration.millis(50));
-        pause.setOnFinished(e -> {
-            // Usar el método de Loc para verificar si el clic está dentro del GridPane
-            if (loc.estaDentroDelGridPane(event.getX(), event.getY())) {
-                double clickX = event.getX();
-                double clickY = event.getY();
-                int[] cl = loc.getfilaccoluma(clickX, clickY);
+        if (!objetoSeleccionado.getId().equals("chip")) {
+            // Esperar brevemente para asegurar que el GridPane se actualice
+            PauseTransition pause = new PauseTransition(Duration.millis(50));
+            pause.setOnFinished(e -> {
+                // Usar el método de Loc para verificar si el clic está dentro del GridPane
+                if (loc.estaDentroDelGridPane(event.getX(), event.getY())) {
+                    double clickX = event.getX();
+                    double clickY = event.getY();
+                    int[] cl = loc.getfilaccoluma(clickX, clickY);
 
-                if (!drawing) {
-                    startX = clickX;
-                    startY = clickY;
-                    drawing = true;
-                } else {
-                    try {
-                        if (!existeCableEnPosicion(startX, startY, clickX, clickY)) {
-                            dibujarCable(startX, startY, clickX, clickY, cl[0], cl[1], 1);
-                        } else {
-                            System.err.println("Error: Ya existe un cable en la posición de inicio o fin del cable.");
+                    if (!drawing) {
+                        startX = clickX;
+                        startY = clickY;
+                        drawing = true;
+                    } else {
+                        try {
+                            if (!existeCableEnPosicion(startX, startY, clickX, clickY)) {
+                                dibujarCable(startX, startY, clickX, clickY, cl[0], cl[1], 1);
+                            } else {
+                                System.err
+                                        .println("Error: Ya existe un cable en la posición de inicio o fin del cable.");
+                            }
+                        } catch (ArrayIndexOutOfBoundsException ex) {
+                            System.err.println(
+                                    "Error: El punto de inicio o fin del cable está fuera de los límites de la matriz.");
                         }
-                    } catch (ArrayIndexOutOfBoundsException ex) {
-                        System.err.println(
-                                "Error: El punto de inicio o fin del cable está fuera de los límites de la matriz.");
+                        drawing = false;
+                        cablearActivo = false; // Desactiva la funcionalidad de cablear después de dibujar
+                        objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
                     }
-                    drawing = false;
-                    cablearActivo = false; // Desactiva la funcionalidad de cablear después de dibujar
-                    objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
                 }
-            }
-        });
-        pause.play();
+            });
+            pause.play();
+        } else {
+            // llamamos a tu funcion
+            double clickX = event.getX();
+            double clickY = event.getY();
+            drawing = true;
+            int[] cl = loc.getfilaccoluma(clickX, clickY);
+            colocarChip(cl[0], cl[1]);
+            drawing = false;
+            cablearActivo = false; // Desactiva la funcionalidad de cablear después de dibujar
+            objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
+        }
     }
 
     private boolean existeCableEnPosicion(double startX, double startY, double endX, double endY) {
@@ -586,4 +600,53 @@ public class GestorCables {
         }
     }
 
+    private void colocarChip(int fila, int columna) {
+        // Verificar que la posición sea válida
+        if (fila == 6 && columna + 6 <= 30) {
+            // Cargar la imagen del chip
+            Image imagenChip = new Image("/resources/chip.png");
+    
+            // Colocar el chip en las filas 6 y 7
+            for (int i = 0; i < 6; i++) {
+                // Colocar en fila 6
+                colocarImagenEnPosicion(fila, columna + i, imagenChip);
+                // Colocar en fila 7
+                colocarImagenEnPosicion(fila + 1, columna + i, imagenChip);
+            }
+    
+            // Aquí puedes realizar cualquier actualización visual adicional si es necesario
+            System.out.println("Chip colocado en la fila 6 y 7 desde la columna " + columna);
+        } else {
+            Alert alerta = new Alert(Alert.AlertType.ERROR);
+            alerta.setTitle("Error");
+            alerta.setHeaderText("Error al colocar el objeto");
+            alerta.setContentText("El objeto no se puede colocar en la posición seleccionada. Solo puedes colocar el chip en la fila 6.");
+            alerta.showAndWait();
+        }
+    }
+    
+    private void colocarImagenEnPosicion(int fila, int columna, Image imagenChip) {
+        Node hoyito = loc.obtenerNodoPorFilaColumna(fila, columna);
+        if (hoyito != null) {
+            // Eliminar el nodo del GridPane si es necesario
+            drawingPane.getChildren().remove(hoyito);
+    
+            // Obtener las coordenadas para posicionar la imagen
+            double[] coordenadas = loc.getCoordenadasGridPane(hoyito);
+            double posX = coordenadas[0];
+            double posY = coordenadas[1];
+    
+            // Crear y configurar el ImageView
+            ImageView imagenView = new ImageView(imagenChip);
+            imagenView.setFitWidth(30); // Ajusta el ancho según sea necesario
+            imagenView.setFitHeight(20); // Ajusta la altura según sea necesario
+            imagenView.setPreserveRatio(false); // Mantiene la relación de aspecto
+    
+            // Posicionar la imagen correctamente en el drawingPane
+            drawingPane.getChildren().add(imagenView);
+            imagenView.setLayoutX(posX - 16);
+            imagenView.setLayoutY(posY - 10);
+            protoboard.getMatriz()[fila][columna] = "C"; // Representación del chip en la matriz
+        }
+    }
 }

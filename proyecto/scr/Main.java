@@ -32,11 +32,6 @@ public class Main extends Application {
         HiloGestorCables hiloGestor = new HiloGestorCables(gestorcables, protoboard, controlador,
                 protoboard.getGridPane());
 
-        VerificadorConexiones verificador = new VerificadorConexiones(gestorcables);
-
-        // Iniciar la búsqueda continua
-        verificador.iniciarBusquedaContinua(protoboard.getMatriz());
-
         // Crear la barra de menú con la instancia de Cablear
         MenuBarra menuBarra = new MenuBarra(gestorcables);
 
@@ -101,7 +96,6 @@ public class Main extends Application {
         // Manejar el cierre de la aplicación
         primaryStage.setOnCloseRequest(event -> {
             hiloGestor.detenerActualizacion();
-            verificador.detenerBusqueda();
         });
 
         primaryStage.widthProperty().addListener(new ChangeListener<Number>() {

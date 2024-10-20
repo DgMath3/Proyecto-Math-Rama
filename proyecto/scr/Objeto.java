@@ -15,60 +15,66 @@ public class Objeto {
 
     private void cargarImagenYColor() {
         switch (id) {
-            case "Cable_azul":
-                imagen = cargarImagen("/resources/nada.png");
-                color = Color.DARKBLUE;
-                pasa = true;
-                largo = 99;
-                break;
-            case "Cable_rojo":
-                imagen = cargarImagen("/resources/nada.png");
-                color = Color.DARKRED;
-                pasa = true;
-                largo = 99;
-                break;
-            case "Led":
-                imagen = cargarImagen("/resources/led_off.png");
-                color = Color.DARKGRAY;
-                pasa = false;
-                largo = 3;
-                break;
-            case "Switch":
-                imagen = cargarImagen("/resources/switch_off.png");
-                color = Color.BLACK;
-                pasa = false;
-                largo = 4;
-                break;
-            case "SwitchOn":
-                imagen = cargarImagen("/resources/switch_on.png");
-                color = Color.BLACK;
-                pasa = true;
-                largo = 4;
-                break;
-            case "cablegen+":
-                imagen = cargarImagen("/resources/nada.png");
-                color = Color.DARKBLUE;
-                pasa = false;
-                largo = 99;
-                break;
-            case "resistor":
-                imagen = cargarImagen("/resources/resistor.png");
-                color = Color.DARKGRAY;
-                pasa = false;
-                largo = 1;
-                break;
-            case "cablegen-":
-                imagen = cargarImagen("/resources/nada.png");
-                color = Color.DARKRED;
-                pasa = false;
-                largo = 99;
-                break;
-            default:
-                imagen = cargarImagen("/resources/nada.png"); // Imagen por defecto
-                color = Color.BLACK;
-                pasa = true;
-                largo = 99;
-                break;
+        case "Cable_azul":
+            imagen = cargarImagen("/resources/nada.png");
+            color = Color.DARKBLUE;
+            pasa = true;
+            largo = 99;
+            break;
+        case "Cable_rojo":
+            imagen = cargarImagen("/resources/nada.png");
+            color = Color.DARKRED;
+            pasa = true;
+            largo = 99;
+            break;
+        case "Led":
+            imagen = cargarImagen("/resources/led_off.png");
+            color = Color.DARKGRAY;
+            pasa = false;
+            largo = 3;
+            break;
+        case "Switch":
+            imagen = cargarImagen("/resources/switch_off.png");
+            color = Color.BLACK;
+            pasa = false;
+            largo = 4;
+            break;
+        case "SwitchOn":
+            imagen = cargarImagen("/resources/switch_on.png");
+            color = Color.BLACK;
+            pasa = true;
+            largo = 4;
+            break;
+        case "cablegen+":
+            imagen = cargarImagen("/resources/nada.png");
+            color = Color.DARKBLUE;
+            pasa = false;
+            largo = 99;
+            break;
+        case "resistor":
+            imagen = cargarImagen("/resources/resistor.png");
+            color = Color.DARKGRAY;
+            pasa = false;
+            largo = 1;
+            break;
+        case "cablegen-":
+            imagen = cargarImagen("/resources/nada.png");
+            color = Color.DARKRED;
+            pasa = false;
+            largo = 99;
+            break;
+        case "chip":
+            imagen = cargarImagen("/resources/chip.png");
+            color = Color.BLACK;
+            pasa = false;
+            largo = 1;
+            break;
+        default:
+            imagen = cargarImagen("/resources/nada.png"); // Imagen por defecto
+            color = Color.BLACK;
+            pasa = true;
+            largo = 99;
+            break;
         }
     }
 
