@@ -30,7 +30,9 @@ public class GestorCables {
     private Controlador controlador;
     private Objeto objetoSeleccionado = null;
     private List<Cable> cables;
+    private List<Chip> chips;
     public boolean Espera;
+    private int[][] matrizConexiones;
 
     public GestorCables(GridPane gridPane, Loc loc, Protoboard protoboard, Controlador controlador) {
         this.gridPane = gridPane;
@@ -41,13 +43,35 @@ public class GestorCables {
         this.drawingPane.setMouseTransparent(false);
         this.gridPane.getChildren().add(drawingPane);
         this.Espera = false;
-
+        this.matrizConexiones = new int[14][30];
+        inicializarMatrizConexiones();
         // Inicializar la lista de cables
         this.cables = new ArrayList<>();
+        this.chips = new ArrayList<>();
 
         // Asegurarse de que el tamaño del Pane de dibujo sea correcto
         this.configurarEventos();
         this.drawingPane.setPrefSize(gridPane.getWidth(), gridPane.getHeight());
+    }
+
+    public void inicializarMatrizConexiones() {
+        for (int i = 0; i < 14; i++) {
+            for (int j = 0; j < 30; j++) {
+                matrizConexiones[i][j] = 0; // Indica que la posición está vacía
+            }
+        }
+    }
+
+    public void imprimirMatrizConexiones() {
+        for (int i = 0; i < matrizConexiones.length; i++) {
+            for (int j = 0; j < matrizConexiones[i].length; j++) {
+                System.out.print(matrizConexiones[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+        System.out.println();
+        System.out.println();
     }
 
     public void configurarEventos() {
@@ -219,6 +243,17 @@ public class GestorCables {
             }
         }
 
+        if (matrizConexiones[filaInicio][columnaInicio] == 1){
+            alerta("hay un objeto #001");
+            return false;
+        }
+
+        if(matrizConexiones[filaFin][columnaFin] == 1 && (!objetoSeleccionado.getId().equals("cablegen+") && !objetoSeleccionado.getId().equals("cablegen-"))){
+            alerta("hay un objeto #002");
+            return false;
+        }
+        
+
         // Obtener color, imagen y estado de pasa energía del objeto seleccionado
         Paint color = objetoSeleccionado != null ? objetoSeleccionado.getColor() : Color.BLACK;
         ImageView imageView = objetoSeleccionado != null ? new ImageView(objetoSeleccionado.getImagen()) : null;
@@ -272,6 +307,12 @@ public class GestorCables {
         drawingPane.getChildren().add(imageView);
         imageView.toFront();
 
+        if (!objetoSeleccionado.getId().equals("cablegen+") && !objetoSeleccionado.getId().equals("cablegen-")){
+            matrizConexiones[filaFin][columnaFin] = 1;
+        }
+        matrizConexiones[filaInicio][columnaInicio] = 1;
+
+        imprimirMatrizConexiones();
         objetoSeleccionado = null;
         drawing = false;
         return true;
@@ -327,6 +368,11 @@ public class GestorCables {
         drawingPane.getChildren().add(imageView);
         imageView.toFront();
 
+        if (!objetoSeleccionado.getId().equals("cablegen+") && !objetoSeleccionado.getId().equals("cablegen-")){
+            matrizConexiones[filaFin][columnaFin] = 1;
+        }
+        matrizConexiones[filaInicio][columnaInicio] = 1;
+
         objetoSeleccionado = null;
         drawing = false;
         return true; // Cable dibujado exitosamente
@@ -344,6 +390,34 @@ public class GestorCables {
             if (cableToRemove != null) {
                 Espera = true;
                 eliminarCable(cableToRemove, true);
+                event.consume(); // Evita que el evento se propague
+            }
+            Chip chipToRemove = null;
+            for (Chip chip : chips) {
+                for (int i = 0; i < 12; i++) {
+                    ImageView imageView = chip.getImageView(i);
+                    if (imageView != null) {
+                        // Comprobar si el clic está dentro de los límites del ImageView
+                        double imageViewX = imageView.getLayoutX();
+                        double imageViewY = imageView.getLayoutY();
+                        double imageViewWidth = imageView.getFitWidth();
+                        double imageViewHeight = imageView.getFitHeight();
+    
+                        if (event.getX() >= imageViewX && event.getX() <= imageViewX + imageViewWidth &&
+                            event.getY() >= imageViewY && event.getY() <= imageViewY + imageViewHeight) {
+                            chipToRemove = chip;
+                            break;
+                        }
+                    }
+                }
+                if (chipToRemove != null) {
+                    break;
+                }
+            }
+    
+            if (chipToRemove != null) {
+                chipToRemove.eliminarImagenes();
+                chips.remove(chipToRemove);
                 event.consume(); // Evita que el evento se propague
             }
         } else if (event.getButton() == MouseButton.PRIMARY && cablearActivo && objetoSeleccionado != null) {
@@ -370,6 +444,7 @@ public class GestorCables {
                 if (cableCambiado.getObjeto().getId().equals("Switch")) {
                     objetoSeleccionado = new Objeto("SwitchOn");
                     cambiarCable(cableCambiado);
+                    eliminarCable(cableCambiado, false);
                     objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
                 } else if (cableCambiado.getObjeto().getId().equals("SwitchOn")) {
                     eliminarEnergiaSinConexiones(protoboard.getMatriz());
@@ -421,12 +496,7 @@ public class GestorCables {
 
         // Eliminar el cable actual
         eliminarCable(cable, false);
-
-        int[] cl = loc.getfilaccoluma(cable.getStartX(), cable.getStartY());
-
-        // Crear un nuevo cable con las mismas coordenadas pero con el nuevo objeto
-        dibujarCable(cable.getStartX(), cable.getStartY(), cable.getEndX(), cable.getEndY(), cl[0], cl[1],
-                cable.getvalor());
+        redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(), cable.getColumnaFin(), cable.getStartX(), cable.getStartY(), cable.getvalor());
 
         eliminarEnergiaSinConexiones(protoboard.getMatriz());
         eliminarEnergiaSinConexiones(protoboard.getMatriz());
@@ -446,15 +516,11 @@ public class GestorCables {
     }
 
     public void eliminarCable(Cable cable, boolean nose) {
-        if (cable == null) {
-            System.err.println("Error: El cable es nulo.");
-            return;
-        }
 
-        if (!cables.contains(cable)) {
-            System.err.println("Error: El cable no está en la lista.");
-            return;
+        if (cable.getObjeto().getId().equals("cablegen+") || cable.getObjeto().getId().equals("cablegen-")){
+            matrizConexiones[cable.getFilaInicio()][cable.getColumnaInicio()] = 0;
         }
+        matrizConexiones[cable.getFilaFin()][cable.getColumnaFin()] = 0;
 
         // Eliminar la línea de dibujo
         drawingPane.getChildren().remove(cable.getLinea());
@@ -601,52 +667,49 @@ public class GestorCables {
     }
 
     private void colocarChip(int fila, int columna) {
-        // Verificar que la posición sea válida
         if (fila == 6 && columna + 6 <= 30) {
-            // Cargar la imagen del chip
             Image imagenChip = new Image("/resources/chip.png");
+            Chip nuevoChip = new Chip(fila, columna, fila + 1, columna + 5);
     
-            // Colocar el chip en las filas 6 y 7
+            // Colocar las imágenes en las filas 6 y 7 y guardar los ImageViews
             for (int i = 0; i < 6; i++) {
-                // Colocar en fila 6
-                colocarImagenEnPosicion(fila, columna + i, imagenChip);
-                // Colocar en fila 7
-                colocarImagenEnPosicion(fila + 1, columna + i, imagenChip);
+                ImageView imageViewFila6 = colocarImagenEnPosicion(fila, columna + i, imagenChip);
+                ImageView imageViewFila7 = colocarImagenEnPosicion(fila + 1, columna + i, imagenChip);
+    
+                // Guardar las imágenes en el Chip
+                nuevoChip.setImageView(i, imageViewFila6);     // Fila 6
+                nuevoChip.setImageView(i + 6, imageViewFila7); // Fila 7
             }
     
-            // Aquí puedes realizar cualquier actualización visual adicional si es necesario
-            System.out.println("Chip colocado en la fila 6 y 7 desde la columna " + columna);
+            // Guardar el nuevo chip en la lista de chips
+            chips.add(nuevoChip);
+    
+            System.out.println("Chip colocado en las filas 6 y 7 desde la columna " + columna);
         } else {
-            Alert alerta = new Alert(Alert.AlertType.ERROR);
-            alerta.setTitle("Error");
-            alerta.setHeaderText("Error al colocar el objeto");
-            alerta.setContentText("El objeto no se puede colocar en la posición seleccionada. Solo puedes colocar el chip en la fila 6.");
-            alerta.showAndWait();
+            alerta("El objeto no se puede colocar en la posición seleccionada. Solo puedes colocar el chip en la fila 6.");
         }
     }
     
-    private void colocarImagenEnPosicion(int fila, int columna, Image imagenChip) {
+    private ImageView colocarImagenEnPosicion(int fila, int columna, Image imagenChip) {
         Node hoyito = loc.obtenerNodoPorFilaColumna(fila, columna);
         if (hoyito != null) {
-            // Eliminar el nodo del GridPane si es necesario
-            drawingPane.getChildren().remove(hoyito);
-    
-            // Obtener las coordenadas para posicionar la imagen
             double[] coordenadas = loc.getCoordenadasGridPane(hoyito);
             double posX = coordenadas[0];
             double posY = coordenadas[1];
     
-            // Crear y configurar el ImageView
             ImageView imagenView = new ImageView(imagenChip);
-            imagenView.setFitWidth(30); // Ajusta el ancho según sea necesario
-            imagenView.setFitHeight(20); // Ajusta la altura según sea necesario
-            imagenView.setPreserveRatio(false); // Mantiene la relación de aspecto
+            imagenView.setFitWidth(30);
+            imagenView.setFitHeight(20);
+            imagenView.setPreserveRatio(false);
     
-            // Posicionar la imagen correctamente en el drawingPane
             drawingPane.getChildren().add(imagenView);
             imagenView.setLayoutX(posX - 16);
             imagenView.setLayoutY(posY - 10);
-            protoboard.getMatriz()[fila][columna] = "C"; // Representación del chip en la matriz
+            protoboard.getMatriz()[fila][columna] = "C";
+    
+            return imagenView; // Retorna el ImageView para que pueda ser almacenado
         }
+        return null; // Si no se encuentra el nodo, retorna null
     }
+    
 }
