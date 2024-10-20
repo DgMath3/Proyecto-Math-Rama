@@ -31,7 +31,11 @@ public class MenuBarra {
         MenuItem resistor = new MenuItem("Resistor");
         resistor.setOnAction(e -> manejarSeleccion("resistor"));
 
-        menuAgregar.getItems().addAll(cable_r, cable_b, led, siwtch, resistor);
+        MenuItem chip = new MenuItem("Chip");
+        chip.setOnAction(e -> manejarSeleccion("chip"));
+
+        menuAgregar.getItems().addAll(cable_r, cable_b, led, siwtch, resistor, chip);
+
         menuBar.getMenus().add(menuAgregar);
     }
 
