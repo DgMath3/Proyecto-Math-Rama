@@ -91,7 +91,7 @@ public class GestorCables {
             return; // Si no está activo o no hay objeto seleccionado, no hace nada
         }
 
-        if (!objetoSeleccionado.getId().equals("chip")) {
+        if (!objetoSeleccionado.getId().equals("chip") && !objetoSeleccionado.getId().equals("Switch2")) {
             // Esperar brevemente para asegurar que el GridPane se actualice
             PauseTransition pause = new PauseTransition(Duration.millis(50));
             pause.setOnFinished(e -> {
@@ -124,13 +124,23 @@ public class GestorCables {
                 }
             });
             pause.play();
-        } else {
+        } else if (!objetoSeleccionado.getId().equals("Switch2")) {
             // llamamos a tu funcion
             double clickX = event.getX();
             double clickY = event.getY();
             drawing = true;
             int[] cl = loc.getfilaccoluma(clickX, clickY);
             colocarChip(cl[0], cl[1]);
+            drawing = false;
+            cablearActivo = false; // Desactiva la funcionalidad de cablear después de dibujar
+            objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
+        } else {
+            // llamamos a tu funcion
+            double clickX = event.getX();
+            double clickY = event.getY();
+            drawing = true;
+            int[] cl = loc.getfilaccoluma(clickX, clickY);
+            colocarotro(cl[0], cl[1]);
             drawing = false;
             cablearActivo = false; // Desactiva la funcionalidad de cablear después de dibujar
             objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
@@ -703,11 +713,12 @@ public class GestorCables {
         }
     }
 
+    
     public void colocarChip(int fila, int columna) {
 
         if (fila == 6 && columna + 6 <= 30) {
             for (int i = fila; i <= fila + 1; i++) {
-                for (int j = columna; j <= columna + 6; j++) {
+                for (int j = columna; j <= columna + 5; j++) {
                     if (i >= 0 && i < matrizConexiones.length && j >= 0 && j < matrizConexiones[i].length) {
                         matrizConexiones[i][j] = 1;
                     }
@@ -734,6 +745,35 @@ public class GestorCables {
         }
     }
 
+    public void colocarotro(int fila, int columna) {
+        if (fila <= 13 && columna + 2 <= 30) {
+            for (int i = fila; i <= fila + 1; i++) {
+                for (int j = columna; j <= columna + 1; j++) {
+                    if (i >= 0 && i < matrizConexiones.length && j >= 0 && j < matrizConexiones[i].length) {
+                        matrizConexiones[i][j] = 1;
+                    }
+                }
+            }
+            Image imagenChip = new Image("/resources/chip.png");
+            Image imagenChip1 = new Image("/resources/chip1.png");
+            Chip nuevoChip = new Chip(fila, columna, fila + 1, columna + 5);
+
+            for (int i = 0; i < 2; i++) {
+                ImageView imageViewFila6 = colocarImagenEnPosicion(fila, columna + i, imagenChip, 20);
+                ImageView imageViewFila7 = colocarImagenEnPosicion(fila + 1, columna + i, imagenChip1, -10);
+
+                // Guardar las imágenes en el Chip
+                nuevoChip.setImageView(i, imageViewFila6); // Fila 6
+                nuevoChip.setImageView(i + 6, imageViewFila7); // Fila 7
+            }
+
+            // Guardar el nuevo chip en la lista de chips
+            chips.add(nuevoChip);
+        } else {
+            alerta("El objeto no se puede colocar en la posición seleccionada. Solo puedes colocar el Switch (grande)");
+        }
+    }
+
     private ImageView colocarImagenEnPosicion(int fila, int columna, Image imagenChip, int margen) {
         Node hoyito = loc.obtenerNodoPorFilaColumna(fila, columna);
         if (hoyito != null) {
@@ -755,5 +795,4 @@ public class GestorCables {
         }
         return null; // Si no se encuentra el nodo, retorna null
     }
-
 }

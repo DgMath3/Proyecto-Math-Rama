@@ -69,6 +69,12 @@ public class Objeto {
             pasa = false;
             largo = 1;
             break;
+        case "Switch2":
+            imagen = cargarImagen("/resources/chip.png");
+            color = Color.BLACK;
+            pasa = false;
+            largo = 1;
+            break;
         default:
             imagen = cargarImagen("/resources/nada.png"); // Imagen por defecto
             color = Color.BLACK;
