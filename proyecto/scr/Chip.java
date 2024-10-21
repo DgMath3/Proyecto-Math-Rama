@@ -14,7 +14,7 @@ public class Chip {
         this.columnaInicio = columnaInicio;
         this.filaFin = filaFin;
         this.columnaFin = columnaFin;
-        this.imageViews = new ImageView[12]; // 6 imágenes para la fila 6 y 6 para la fila 7
+        this.imageViews = new ImageView[12];
     }
 
     // Método para agregar un ImageView al arreglo
