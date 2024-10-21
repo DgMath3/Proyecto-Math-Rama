@@ -3,11 +3,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
 public class HiloGestorCables {
+
+    private final ReentrantLock lock = new ReentrantLock();
     private final GestorCables gestorCables;
     private final ScheduledExecutorService scheduler;
     private final GridPane gridPane;
@@ -45,10 +48,11 @@ public class HiloGestorCables {
             return; // No hace nada si ya está detenido
         }
         running = false;
-        scheduler.shutdown();
+        scheduler.shutdownNow(); // Detiene inmediatamente todas las tareas en ejecución
+
         try {
-            if (!scheduler.awaitTermination(0, TimeUnit.SECONDS)) { // Espera un máximo de 5 segundos para que los hilos
-                                                                    // terminen
+            if (!scheduler.awaitTermination(0, TimeUnit.SECONDS)) {
+                // Si las tareas no terminan instantáneamente, forzamos el cierre
                 scheduler.shutdownNow();
             }
         } catch (InterruptedException e) {
@@ -131,17 +135,31 @@ public class HiloGestorCables {
         }
     }
 
+    public void bloquearProcesarCable() {
+        lock.lock();
+    }
+    
+    // Método para desbloquear el procesamiento de cables
+    public void desbloquearProcesarCable() {
+        lock.unlock();
+    }
+
     // Método para procesar el cable
     private void procesarCable(Cable cable, String[][] matrizEnergia) {
-        int filaInicio = cable.getFilaInicio();
-        int columnaInicio = cable.getColumnaInicio();
-        int filaFin = cable.getFilaFin();
-        int columnaFin = cable.getColumnaFin();
-        Objeto objeto = cable.getObjeto();
-
-        // Verificación de cables
-        if (objeto.getpasa()) {
-            actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+        lock.lock(); // Bloquear antes de procesar
+        try {
+            int filaInicio = cable.getFilaInicio();
+            int columnaInicio = cable.getColumnaInicio();
+            int filaFin = cable.getFilaFin();
+            int columnaFin = cable.getColumnaFin();
+            Objeto objeto = cable.getObjeto();
+    
+            // Verificación de cables
+            if (objeto.getpasa()) {
+                actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+            }
+        } finally {
+            lock.unlock(); // Asegurar que el bloqueo siempre se libere
         }
     }
 
@@ -152,17 +170,17 @@ public class HiloGestorCables {
             matrizEnergia[filaFin][columnaFin] = "|";
             matrizEnergia[filaInicio][columnaInicio] = "|";
         } else {
-            if (matrizEnergia[filaInicio][columnaInicio].equals("+") &&
-                    matrizEnergia[filaFin][columnaFin].equals("|")) {
+            if (matrizEnergia[filaInicio][columnaInicio].equals("+")
+                    && matrizEnergia[filaFin][columnaFin].equals("|")) {
                 matrizEnergia[filaFin][columnaFin] = "+";
-            } else if (matrizEnergia[filaInicio][columnaInicio].equals("-") &&
-                    matrizEnergia[filaFin][columnaFin].equals("|")) {
+            } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")
+                    && matrizEnergia[filaFin][columnaFin].equals("|")) {
                 matrizEnergia[filaFin][columnaFin] = "-";
-            } else if (matrizEnergia[filaFin][columnaFin].equals("+") &&
-                    matrizEnergia[filaInicio][columnaInicio].equals("|")) {
+            } else if (matrizEnergia[filaFin][columnaFin].equals("+")
+                    && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
                 matrizEnergia[filaInicio][columnaInicio] = "+";
-            } else if (matrizEnergia[filaFin][columnaFin].equals("-") &&
-                    matrizEnergia[filaInicio][columnaInicio].equals("|")) {
+            } else if (matrizEnergia[filaFin][columnaFin].equals("-")
+                    && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
                 matrizEnergia[filaInicio][columnaInicio] = "-";
             }
         }
