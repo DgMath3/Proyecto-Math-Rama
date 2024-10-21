@@ -91,7 +91,7 @@ public class Main extends Application {
         primaryStage.setResizable(true); // Permitir maximizar
         primaryStage.show();
 
-        hiloGestor.iniciarActualizacionContinua(protoboard.getMatriz(),250);
+        hiloGestor.iniciarActualizacionContinua(protoboard.getMatriz(),200);
 
         // Manejar el cierre de la aplicación
         primaryStage.setOnCloseRequest(event -> {
@@ -103,8 +103,6 @@ public class Main extends Application {
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // Crear una pausa de 1 segundo
                 PauseTransition pause = new PauseTransition(Duration.millis(100));
-
-                // Al terminar la pausa, llamar a actualizar()
                 pause.setOnFinished(event -> gestorcables.actualizar());
 
                 // Iniciar la pausa

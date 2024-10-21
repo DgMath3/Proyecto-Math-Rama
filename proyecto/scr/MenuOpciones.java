@@ -70,7 +70,7 @@ public class MenuOpciones {
             Optional<String> result = dialog.showAndWait();
             result.ifPresent(nombreArchivo -> {
                 String rutaArchivo = directorioCables + File.separator + nombreArchivo + ".dat";
-                updown.guardar(gestorCables.obtenerCables(), rutaArchivo);
+                updown.guardar(gestorCables.obtenerCables(), gestorCables.obtenerChips(), rutaArchivo);
                 mostrarAlerta(AlertType.INFORMATION, "Guardar", "Éxito", "Cables guardados exitosamente en " + rutaArchivo);
             });
         });
@@ -109,9 +109,11 @@ public class MenuOpciones {
                     // Eliminar cables existentes solo si el usuario confirma
                     List<Cable> cablesAEliminar = new ArrayList<>(gestorCables.obtenerCables()); // Crea una copia
                     for (Cable cable : cablesAEliminar) {
-                        // Eliminar el ImageView del drawingPane
-                        // Eliminar el cable
                         gestorCables.eliminarCable(cable, false);
+                    }
+                    List<Chip> chipsAEliminar = new ArrayList<>(gestorCables.obtenerChips());
+                    for (Chip chip : chipsAEliminar){
+                        gestorCables.eliminarChip(chip);
                     }
 
                     gestorCables.eliminarEnergiaSinConexiones(protoboard.getMatriz());
