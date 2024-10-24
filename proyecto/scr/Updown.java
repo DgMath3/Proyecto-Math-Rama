@@ -1,10 +1,7 @@
-import javafx.scene.paint.Color;
 import java.io.*;
 import java.util.List;
 
 public class Updown {
-    private boolean bateriaEncendida = true;
-
     public void guardar(List<Cable> cables, List<Chip> chips, String nombreArchivo) {
         try (DataOutputStream out = new DataOutputStream(new FileOutputStream(nombreArchivo))) {
             // Guardar cables
@@ -50,7 +47,6 @@ public class Updown {
                 Objeto objeto = new Objeto(id);
                 gestorCables.setObjetoSeleccionado(objeto);
                 gestorCables.redibujar(filaInicio, columnaInicio, filaFin, columnaFin, startX, startY, valor);
-                actualizarProtoboardConCable(id, filaInicio, columnaInicio, protoboard, controlador);
             }
 
             // Cargar chips
@@ -61,28 +57,11 @@ public class Updown {
                 gestorCables.colocarChip(filaInicio, columnaInicio); // Colocar el chip en el gestor
             }
 
+            gestorCables.setEnergia();
+
             System.out.println("Cables y chips cargados desde " + nombreArchivo);
         } catch (IOException e) {
             System.err.println("Error al cargar: " + e.getMessage());
         }
-    }
-
-    private void actualizarProtoboardConCable(String id, int filaInicio, int columnaInicio, Protoboard protoboard, Controlador controlador) {
-        if (id.equals("cablegen+")) {
-            protoboard.cambiarColor(filaInicio, columnaInicio, Color.BLUE, bateriaEncendida);
-        } else if (id.equals("cablegen-")) {
-            protoboard.cambiarColor(filaInicio, columnaInicio, Color.RED, bateriaEncendida);
-        }
-        controlador.actualizarBuses(protoboard.getGridPane());
-        controlador.ActualizarProtoboard(protoboard.getGridPane());
-    }
-
-    public void setBateriaEncendida(boolean estado) {
-        this.bateriaEncendida = estado;
-        System.out.println("Estado de la batería actualizado a: " + (estado ? "Encendida" : "Apagada"));
-    }
-
-    public boolean isBateriaEncendida() {
-        return this.bateriaEncendida;
     }
 }

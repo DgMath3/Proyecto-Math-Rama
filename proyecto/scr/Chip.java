@@ -7,13 +7,15 @@ public class Chip {
     private final int columnaInicio;
     private final int filaFin;
     private final int columnaFin;
+    private final int largo;
 
     // Constructor
-    public Chip(int filaInicio, int columnaInicio, int filaFin, int columnaFin) {
+    public Chip(int filaInicio, int columnaInicio, int filaFin, int columnaFin, int largo) {
         this.filaInicio = filaInicio;
         this.columnaInicio = columnaInicio;
         this.filaFin = filaFin;
         this.columnaFin = columnaFin;
+        this.largo = largo;
         this.imageViews = new ImageView[12];
     }
 
@@ -35,6 +37,10 @@ public class Chip {
     // Getters para las posiciones del chip
     public int getFilaInicio() {
         return filaInicio;
+    }
+
+    public int getlargo(){
+        return largo;
     }
 
     public int getColumnaInicio() {

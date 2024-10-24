@@ -20,7 +20,6 @@ public class Bateria {
     private Color colorEsperado;
     private GridPane gridPane;
     private GestorCables gestorcables;
-    private HiloGestorCables hiloGestorCables;
     private double startX, startY;
     private boolean bateriaEncendida;
 
@@ -32,7 +31,6 @@ public class Bateria {
         this.controlador = controlador;
         this.gridPane = gridPane;
         this.gestorcables = cablear;
-        this.hiloGestorCables = hiloGestorCables; // Inicializar la referencia
 
         contenedorBateria = new VBox();
         bateriaImagen = new ImageView(new Image("/resources/bateria.png"));
@@ -66,19 +64,10 @@ public class Bateria {
             // Cambiar la imagen de la batería según su estado
             if (bateriaEncendida) {
                 bateriaImagen.setImage(new Image("/resources/bateria.png")); // Imagen de batería encendida
+                gestorcables.setEnergia();
             } else {
                 bateriaImagen.setImage(new Image("/resources/bateriaOFF.png")); // Imagen de batería apagada
-            }
-
-            // Actualizar la energía de todo el protoboard según el estado de la batería
-            protoboard.cambiarEnergiaDeTodoElProtoboard(bateriaEncendida);
-
-            // Notificar a HiloGestorCables sobre el cambio de estado
-            if (hiloGestorCables != null) {
-                hiloGestorCables.setBateriaEncendida(bateriaEncendida);
-                System.out.println("Notificado a HiloGestorCables sobre el cambio de estado de la batería.");
-            } else {
-                System.out.println("Referencia a HiloGestorCables es nula.");
+                gestorcables.EliminarEnergia(protoboard.getMatriz());
             }
         });
     }
@@ -112,10 +101,10 @@ public class Bateria {
         boolean exito = gestorcables.dibujarCable(startX, startY, endX, endY, filaFin, columnaFin, 1);
         if (exito) {
             // Aplica el color y actualiza el protoboard si la batería está encendida
-            protoboard.cambiarColor(filaFin, columnaFin, colorEsperado, bateriaEncendida);
+            protoboard.cambiarColor(filaFin, columnaFin, colorEsperado);
             controlador.actualizarBuses(protoboard.getGridPane());
             controlador.ActualizarProtoboard(protoboard.getGridPane());
-            protoboard.actualizarMatriz(gridPane, bateriaEncendida);
+            protoboard.actualizarMatriz(gridPane);
             System.out.println("Cable conectado y color aplicado.");
         }
         finalizarAccion(); // Finaliza la acción después de aplicar el color

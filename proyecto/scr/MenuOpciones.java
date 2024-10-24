@@ -115,8 +115,8 @@ public class MenuOpciones {
                     for (Chip chip : chipsAEliminar){
                         gestorCables.eliminarChip(chip);
                     }
-
-                    gestorCables.eliminarEnergiaSinConexiones(protoboard.getMatriz());
+                    gestorCables.EliminarEnergia(protoboard.getMatriz());
+                    gestorCables.setEnergia();
 
                     // Cargar nuevos cables desde el archivo
                     String rutaArchivo = directorioCables + File.separator + nombreArchivo + ".dat";

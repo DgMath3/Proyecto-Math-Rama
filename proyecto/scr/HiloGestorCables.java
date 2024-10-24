@@ -3,21 +3,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
 public class HiloGestorCables {
 
-    private final ReentrantLock lock = new ReentrantLock();
     private final GestorCables gestorCables;
     private final ScheduledExecutorService scheduler;
     private final GridPane gridPane;
     private volatile boolean running; // Indica si el hilo está en ejecución
     private Protoboard protoboard;
     private Controlador controlador;
-    private boolean bateriaEncendida = true;
+    private List<Cable> cablesAnteriores; // Almacena la lista anterior de cables para verificar cambios
 
     // Constructor
     public HiloGestorCables(GestorCables gestorCables, Protoboard protoboard, Controlador controlador,
@@ -28,18 +26,34 @@ public class HiloGestorCables {
         this.gridPane = gridPane;
         this.protoboard = protoboard; // Inicializar protoboard
         this.controlador = controlador; // Inicializar controlador
+        this.cablesAnteriores = gestorCables.obtenerCables(); // Inicializa con la lista actual de cables
     }
 
     // Método para iniciar la ejecución periódica con mayor velocidad
     public void iniciarActualizacionContinua(String[][] matrizEnergia, long periodoMilisegundos) {
-        scheduler.scheduleAtFixedRate(() -> {
-            try {
-                actualizarObjetos(matrizEnergia); // Método que actualiza objetos
-                actualizarObjetosInverso(matrizEnergia); // Método que actualiza objetos en sentido inverso
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, 0, periodoMilisegundos, TimeUnit.MILLISECONDS); // 0 significa que empieza de inmediato
+        if (!running) {
+            running = true;
+            scheduler.scheduleAtFixedRate(() -> {
+                try {
+                    // Verifica si la lista de cables ha cambiado
+                    List<Cable> cablesActuales = gestorCables.obtenerCables();
+                    if (!cablesActuales.equals(cablesAnteriores)) {
+                        reiniciarActualizacion(matrizEnergia, periodoMilisegundos); // Reinicia si hay cambios
+                    } else {
+                        actualizarObjetos(matrizEnergia); // Método que actualiza objetos si no hay cambios
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, 0, periodoMilisegundos, TimeUnit.MILLISECONDS); // Empieza de inmediato
+        }
+    }
+
+    // Método para reiniciar la actualización cuando cambian los cables
+    private void reiniciarActualizacion(String[][] matrizEnergia, long periodoMilisegundos) {
+        detenerActualizacion(); // Detiene la ejecución actual
+        cablesAnteriores = gestorCables.obtenerCables(); // Actualiza la lista de cables
+        iniciarActualizacionContinua(matrizEnergia, periodoMilisegundos); // Reinicia la actualización
     }
 
     // Método para detener la ejecución
@@ -74,7 +88,7 @@ public class HiloGestorCables {
         }
 
         // Crear un ExecutorService para procesar en paralelo
-        int numHilos = Runtime.getRuntime().availableProcessors();
+        int numHilos = 7;
         ExecutorService executor = Executors.newFixedThreadPool(numHilos);
 
         for (Cable cable : cables) {
@@ -98,124 +112,57 @@ public class HiloGestorCables {
         }
     }
 
-    // Método para actualizar objetos en orden inverso
-    public void actualizarObjetosInverso(String[][] matrizEnergia) {
-        if (gestorCables.Espera()) {
-            return; // No hacer nada si está en espera
-        }
-
-        List<Cable> cables = gestorCables.obtenerCables();
-
-        if (cables.isEmpty()) {
-            return; // No hacer nada si la lista está vacía
-        }
-
-        int numHilos = Runtime.getRuntime().availableProcessors();
-        ExecutorService executor = Executors.newFixedThreadPool(numHilos);
-
-        for (int i = cables.size() - 1; i >= 0; i--) {
-            Cable cable = cables.get(i);
-            executor.submit(() -> {
-                try {
-                    procesarCable(cable, matrizEnergia);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        }
-
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            executor.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    public void bloquearProcesarCable() {
-        lock.lock();
-    }
-    
-    // Método para desbloquear el procesamiento de cables
-    public void desbloquearProcesarCable() {
-        lock.unlock();
-    }
-
     // Método para procesar el cable
     private void procesarCable(Cable cable, String[][] matrizEnergia) {
-        lock.lock(); // Bloquear antes de procesar
-        try {
-            int filaInicio = cable.getFilaInicio();
-            int columnaInicio = cable.getColumnaInicio();
-            int filaFin = cable.getFilaFin();
-            int columnaFin = cable.getColumnaFin();
-            Objeto objeto = cable.getObjeto();
-    
-            // Verificación de cables
-            if (objeto.getpasa()) {
-                actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
-            }
-        } finally {
-            lock.unlock(); // Asegurar que el bloqueo siempre se libere
+        int filaInicio = cable.getFilaInicio();
+        int columnaInicio = cable.getColumnaInicio();
+        int filaFin = cable.getFilaFin();
+        int columnaFin = cable.getColumnaFin();
+        Objeto objeto = cable.getObjeto();
+
+        // Verificación de cables
+        if (objeto.getpasa()) {
+            actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
         }
     }
 
     // Método para actualizar energía respetando el estado de la batería
     private void actualizarEnergia(int filaInicio, int columnaInicio, int filaFin, int columnaFin,
             String[][] matrizEnergia) {
-        if (!bateriaEncendida) {
-            matrizEnergia[filaFin][columnaFin] = "|";
-            matrizEnergia[filaInicio][columnaInicio] = "|";
-        } else {
-            if (matrizEnergia[filaInicio][columnaInicio].equals("+")
-                    && matrizEnergia[filaFin][columnaFin].equals("|")) {
-                matrizEnergia[filaFin][columnaFin] = "+";
-            } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")
-                    && matrizEnergia[filaFin][columnaFin].equals("|")) {
-                matrizEnergia[filaFin][columnaFin] = "-";
-            } else if (matrizEnergia[filaFin][columnaFin].equals("+")
-                    && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
-                matrizEnergia[filaInicio][columnaInicio] = "+";
-            } else if (matrizEnergia[filaFin][columnaFin].equals("-")
-                    && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
-                matrizEnergia[filaInicio][columnaInicio] = "-";
-            }
+
+        if (matrizEnergia[filaInicio][columnaInicio].equals("+") && matrizEnergia[filaFin][columnaFin].equals("|")) {
+            matrizEnergia[filaFin][columnaFin] = "+";
+        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")
+                && matrizEnergia[filaFin][columnaFin].equals("|")) {
+            matrizEnergia[filaFin][columnaFin] = "-";
+        } else if (matrizEnergia[filaFin][columnaFin].equals("+")
+                && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
+            matrizEnergia[filaInicio][columnaInicio] = "+";
+        } else if (matrizEnergia[filaFin][columnaFin].equals("-")
+                && matrizEnergia[filaInicio][columnaInicio].equals("|")) {
+            matrizEnergia[filaInicio][columnaInicio] = "-";
         }
 
         aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
-        protoboard.actualizarMatriz(gridPane, bateriaEncendida);
+        protoboard.actualizarMatriz(gridPane);
     }
 
     // Método para aplicar colores al protoboard
     private void aplicarColoresProtoboard(int filaInicio, int columnaInicio, int filaFin, int columnaFin,
             String[][] matrizEnergia) {
         if (matrizEnergia[filaInicio][columnaInicio].equals("+")) {
-            protoboard.cambiarColor(filaInicio, columnaInicio, Color.BLUE, bateriaEncendida);
+            protoboard.cambiarColor(filaInicio, columnaInicio, Color.BLUE);
         } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")) {
-            protoboard.cambiarColor(filaInicio, columnaInicio, Color.RED, bateriaEncendida);
+            protoboard.cambiarColor(filaInicio, columnaInicio, Color.RED);
         }
 
         if (matrizEnergia[filaFin][columnaFin].equals("+")) {
-            protoboard.cambiarColor(filaFin, columnaFin, Color.BLUE, bateriaEncendida);
+            protoboard.cambiarColor(filaFin, columnaFin, Color.BLUE);
         } else if (matrizEnergia[filaFin][columnaFin].equals("-")) {
-            protoboard.cambiarColor(filaFin, columnaFin, Color.RED, bateriaEncendida);
+            protoboard.cambiarColor(filaFin, columnaFin, Color.RED);
         }
 
         controlador.actualizarBuses(protoboard.getGridPane());
         controlador.ActualizarProtoboard(protoboard.getGridPane());
-    }
-
-    // Método para establecer el estado de la batería
-    public void setBateriaEncendida(boolean estado) {
-        this.bateriaEncendida = estado;
-        System.out.println("Estado de la batería actualizado a: " + (estado ? "Encendida" : "Apagada"));
-    }
-
-    // Método para obtener el estado de la batería
-    public boolean isBateriaEncendida() {
-        return this.bateriaEncendida;
     }
 }

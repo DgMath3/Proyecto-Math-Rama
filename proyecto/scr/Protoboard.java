@@ -27,17 +27,9 @@ public class Protoboard {
         inicializarMatrizEnergia(matriz);
     }
 
-    public void cambiarColor(int fila, int columna, Color color, boolean bateriaEncendida) {
+    public void cambiarColor(int fila, int columna, Color color) {
         Circle punto = (Circle) gridPane.getChildren().get(fila * numColumnas + columna);
 
-        // Si la batería está apagada, solo aplicar energía neutra
-        if (!bateriaEncendida) {
-            punto.setFill(Color.LIGHTGRAY); // Visualmente representamos como neutro
-            matriz[fila][columna] = "|"; // Energía neutra en la matriz
-            return;
-        }
-
-        // Si la batería está encendida, aplica el color normalmente
         punto.setFill(color);
 
         // Actualizar la matriz dependiendo del color aplicado
@@ -99,7 +91,7 @@ public class Protoboard {
     }
 
     // Método para actualizar la matriz según el color de los puntos del GridPane
-    public void actualizarMatriz(GridPane gridPane, boolean bateriaEncendida) {
+    public void actualizarMatriz(GridPane gridPane) {
         if (matriz == null) {
             System.out.println("Error: la matriz no está inicializada.");
             return;
@@ -111,14 +103,12 @@ public class Protoboard {
                     Circle punto = (Circle) node;
                     Color color = (Color) punto.getFill();
 
-                    if (bateriaEncendida) {
-                        if (color.equals(Color.BLUE)) {
-                            matriz[i][j] = "+"; // Energía positiva
-                        } else if (color.equals(Color.RED)) {
-                            matriz[i][j] = "-"; // Energía negativa
-                        } else {
-                            matriz[i][j] = "|"; // Energía neutra
-                        }
+                    if (color.equals(Color.BLUE)) {
+                        matriz[i][j] = "+"; // Energía positiva
+                    } else if (color.equals(Color.RED)) {
+                        matriz[i][j] = "-"; // Energía negativa
+                    } else {
+                        matriz[i][j] = "|"; // Energía neutra
                     }
                     // Si la batería está apagada, no modificar la matriz
                 } else {
@@ -152,37 +142,4 @@ public class Protoboard {
             }
         }
     }
-
-    // Método para cambiar la energía de todo el protoboard según el estado de la
-    // batería
-    public void cambiarEnergiaDeTodoElProtoboard(boolean bateriaEncendida) {
-        for (int i = 0; i < numFilas; i++) {
-            for (int j = 0; j < numColumnas; j++) {
-                Node node = obtenerhoyito(gridPane, i, j);
-                if (node != null && node instanceof Circle) {
-                    Circle punto = (Circle) node;
-                    if (!bateriaEncendida) {
-                        punto.setFill(Color.LIGHTGRAY); // Color visual para energía neutra
-                        // No modificar la matriz de energía
-                    } else {
-                        // Restaurar el color según el valor en la matriz
-                        switch (matriz[i][j]) {
-                            case "+":
-                                punto.setFill(Color.BLUE);
-                                break;
-                            case "-":
-                                punto.setFill(Color.RED);
-                                break;
-                            default:
-                                punto.setFill(Color.LIGHTGRAY);
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-        System.out.println(
-                "Energía de todo el protoboard actualizada a: " + (bateriaEncendida ? "Encendida" : "Apagada"));
-    }
-
 }

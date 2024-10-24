@@ -91,7 +91,7 @@ public class Main extends Application {
         primaryStage.setResizable(true); // Permitir maximizar
         primaryStage.show();
 
-        hiloGestor.iniciarActualizacionContinua(protoboard.getMatriz(),200);
+        hiloGestor.iniciarActualizacionContinua(protoboard.getMatriz(),100);
 
         // Manejar el cierre de la aplicación
         primaryStage.setOnCloseRequest(event -> {
