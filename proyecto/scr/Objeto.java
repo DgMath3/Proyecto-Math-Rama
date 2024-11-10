@@ -2,6 +2,7 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 public class Objeto {
+    private String tipoChip; 
     private String id;
     private Image imagen;
     private Color color;
@@ -11,6 +12,14 @@ public class Objeto {
     public Objeto(String id) {
         this.id = id;
         cargarImagenYColor();
+
+        if (id.equals("AND")) {
+            this.tipoChip = "AND";
+        } else if (id.equals("OR")) {
+            this.tipoChip = "OR";
+        } else if (id.equals("NOT")) {
+            this.tipoChip = "NOT";
+        }
     }
 
     private void cargarImagenYColor() {
@@ -29,6 +38,12 @@ public class Objeto {
             break;
         case "Led":
             imagen = cargarImagen("/resources/led_off.png");
+            color = Color.DARKGRAY;
+            pasa = true;
+            largo = 3;
+            break;
+        case "Led_on":
+            imagen = cargarImagen("/resources/led_on.png");
             color = Color.DARKGRAY;
             pasa = true;
             largo = 3;
@@ -63,7 +78,19 @@ public class Objeto {
             pasa = false;
             largo = 99;
             break;
-        case "chip":
+        case "chip AND":
+            imagen = cargarImagen("/resources/nada.png");
+            color = Color.PURPLE;
+            pasa = true;
+            largo = 99;
+            break;
+        case "chip NOT":
+            imagen = cargarImagen("/resources/nada.png");
+            color = Color.PURPLE;
+            pasa = true;
+            largo = 99;
+            break;
+        case "chip OR":
             imagen = cargarImagen("/resources/nada.png");
             color = Color.PURPLE;
             pasa = true;
@@ -91,6 +118,10 @@ public class Objeto {
             System.err.println("Error al cargar la imagen: " + e.getMessage());
             return null; // O asignar una imagen por defecto
         }
+    }
+
+    public String getTipoChip() {
+        return tipoChip;
     }
 
     public Image getImagen() {

@@ -2,21 +2,26 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 
 public class Chip {
-    private final ImageView[] imageViews; // Arreglo para almacenar las imágenes del chip
+    private final ImageView[] imageViews;
     private final int filaInicio;
     private final int columnaInicio;
     private final int filaFin;
     private final int columnaFin;
     private final int largo;
+    private final String id; 
 
-    // Constructor
-    public Chip(int filaInicio, int columnaInicio, int filaFin, int columnaFin, int largo) {
+    public Chip(int filaInicio, int columnaInicio, int filaFin, int columnaFin, int largo, String id) {
         this.filaInicio = filaInicio;
         this.columnaInicio = columnaInicio;
         this.filaFin = filaFin;
         this.columnaFin = columnaFin;
         this.largo = largo;
-        this.imageViews = new ImageView[12];
+        this.id = id; 
+        this.imageViews = new ImageView[17];
+    }
+
+    public String getId() {
+        return id;
     }
 
     // Método para agregar un ImageView al arreglo
@@ -63,4 +68,9 @@ public class Chip {
             }
         }
     }
+
+    public String getTipoChip() {
+        return this.id; // Suponiendo que `tipo` es un campo en tu clase Chip que guarda "AND", "OR" o "NOT"
+    }
+    
 }
