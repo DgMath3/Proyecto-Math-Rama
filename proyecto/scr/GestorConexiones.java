@@ -1,76 +1,150 @@
+import javafx.application.Platform;
 import java.util.ArrayList;
-import java.util.List;
 
 public class GestorConexiones {
 
     private final GestorCables gestorCables;
-    private final int[][] matrizConexiones; // Matriz de conexiones
+    private Thread hiloConexiones;
 
-    // Constructor
-    public GestorConexiones(GestorCables gestorCables, int[][] matrizConexiones) {
+    public GestorConexiones(GestorCables gestorCables) {
         this.gestorCables = gestorCables;
-        this.matrizConexiones = matrizConexiones;
+        iniciarBusquedaConexiones();
     }
 
-    // Método principal para buscar conexiones en una posición específica
-    public List<Cable> buscarConexionesEnPosicion(int fila, int columna) {
-        List<Cable> cablesConectados = new ArrayList<>();
+    private void iniciarBusquedaConexiones() {
+        hiloConexiones = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                for (Cable cable : gestorCables.obtenerCables()) {
+                    if (cable.getObjeto().getId().equals("cablegen+")
+                            || cable.getObjeto().getId().equals("cablegen-")) {
+                        procesarConexion(cable);
+                    }
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        });
 
-        // Determinar el sector según la fila y buscar en el bus o el protoboard
-        if (fila >= 0 && fila <= 1) {
-            // Sector superior del bus (filas 0-1)
-            cablesConectados.addAll(buscarEnSectorBus(fila, columna));
-        } else if (fila >= 12 && fila <= 13) {
-            // Sector inferior del bus (filas 12-13)
-            cablesConectados.addAll(buscarEnSectorBus(fila, columna));
-        } else if (fila >= 2 && fila <= 6) {
-            // Sector superior del protoboard (filas 2-6)
-            cablesConectados.addAll(buscarEnSectorProtoboard(fila, columna));
-        } else if (fila >= 7 && fila <= 11) {
-            // Sector inferior del protoboard (filas 7-11)
-            cablesConectados.addAll(buscarEnSectorProtoboard(fila, columna));
+        hiloConexiones.setDaemon(true); // Permite que el hilo se detenga al cerrar la aplicación
+        hiloConexiones.start();
+    }
+
+    // Método para detener el hilo
+    public void detener() {
+        if (hiloConexiones != null && hiloConexiones.isAlive()) {
+            hiloConexiones.interrupt();
         }
-
-        return cablesConectados;
     }
 
-    // Método para buscar cables conectados en los buses (sector de energía)
-    private List<Cable> buscarEnSectorBus(int fila, int columna) {
-        List<Cable> cablesConectados = new ArrayList<>();
-        int numColumns = matrizConexiones[0].length; // Número de columnas en la matriz de conexiones
+    private void procesarConexion(Cable cableInicial) {
+        ArrayList<Cable> conexion = new ArrayList<>();
+        conexion.add(cableInicial);
+        Cable anterior = cableInicial;
 
-        // Recorrer las columnas del sector de bus
-        for (int col = 0; col < numColumns; col++) {
-            // Verificar si hay una conexión en la matriz de conexiones
-            if (matrizConexiones[fila][col] != 0) {
-                // Obtener el cable conectado en esta posición
-                Cable cableConectado = gestorCables.obtenerCableEnPosicion(fila, col);
-                if (cableConectado != null && !cablesConectados.contains(cableConectado)) {
-                    cablesConectados.add(cableConectado);
+        int i = 0;
+        while (i < gestorCables.obtenerCables().size()) {
+            Cable siguiente = buscar(anterior, conexion);
+
+            if (siguiente != null && !conexion.contains(siguiente)) {
+                anterior = siguiente;
+                conexion.add(siguiente);
+            }
+
+            if (siguiente != null && ((cableInicial.getObjeto().getId().equals("cablegen+")
+                    && siguiente.getObjeto().getId().equals("cablegen-"))
+                    || (cableInicial.getObjeto().getId().equals("cablegen-")
+                            && siguiente.getObjeto().getId().equals("cablegen+")))) {
+                actualizarConexion(conexion);
+                break;
+            }
+            i++;
+        }
+    }
+
+    private Cable buscar(Cable cable, ArrayList<Cable> Conexion) {
+        for (Cable cable2 : gestorCables.obtenerCables()) {
+            if ((encontrar(cable2.getFilaInicio(), cable2.getColumnaInicio(), cable) != null
+                    || encontrarv2(cable2.getFilaInicio(), cable2.getColumnaInicio(), cable) != null)) {
+                if (!Conexion.contains(cable2)) {
+                    return cable2;
+                }
+            } else if ((encontrar(cable2.getFilaFin(), cable2.getColumnaFin(), cable) != null
+                    || encontrarv2(cable2.getFilaFin(), cable2.getColumnaFin(), cable) != null)) {
+                if (!Conexion.contains(cable2)) {
+                    return cable2;
                 }
             }
         }
-
-        return cablesConectados;
+        return null;
     }
 
-    // Método para buscar cables conectados en el protoboard
-    private List<Cable> buscarEnSectorProtoboard(int fila, int columna) {
-        List<Cable> cablesConectados = new ArrayList<>();
-        int numColumns = matrizConexiones[0].length; // Número de columnas en la matriz de conexiones
-
-        // Recorrer las columnas del sector del protoboard
-        for (int col = 0; col < numColumns; col++) {
-            // Verificar si hay una conexión en la matriz de conexiones
-            if (matrizConexiones[fila][col] != 0) {
-                // Obtener el cable conectado en esta posición
-                Cable cableConectado = gestorCables.obtenerCableEnPosicion(fila, col);
-                if (cableConectado != null && !cablesConectados.contains(cableConectado)) {
-                    cablesConectados.add(cableConectado);
-                }
+    private Cable encontrar(int fila, int columna, Cable cable) {
+        if (fila < 2 && cable.getFilaInicio() < 2) {
+            if (fila == cable.getFilaInicio()) {
+                return cable;
             }
         }
+        if (fila > 11 && cable.getFilaInicio() > 11) {
+            if (fila == cable.getFilaInicio()) {
+                return cable;
+            }
+        }
+        if (fila <= 7 && cable.getFilaInicio() <= 7) {
+            if (columna == cable.getColumnaInicio()) {
+                return cable;
+            }
+        }
+        if (fila > 7 && cable.getFilaInicio() > 7) {
+            if (columna == cable.getColumnaInicio()) {
+                return cable;
+            }
+        }
+        return null;
+    }
 
-        return cablesConectados;
+    private Cable encontrarv2(int fila, int columna, Cable cable) {
+        if (fila < 2 && cable.getFilaFin() < 2) {
+            if (fila == cable.getFilaFin()) {
+                return cable;
+            }
+        }
+        if (fila > 11 && cable.getFilaFin() > 11) {
+            if (fila == cable.getFilaFin()) {
+                return cable;
+            }
+        }
+        if (fila <= 7 && cable.getFilaFin() <= 7) {
+            if (columna == cable.getColumnaFin()) {
+                return cable;
+            }
+        }
+        if (fila > 7 && cable.getFilaFin() > 7) {
+            if (columna == cable.getColumnaFin()) {
+                return cable;
+            }
+        }
+        return null;
+    }
+
+    private void actualizarConexion(ArrayList<Cable> conexiones) {
+        Platform.runLater(() -> {
+            for (Cable cable : conexiones) {
+                if (cable.getObjeto().getId().equals("Led") && gestorCables.getestado()) {
+                    gestorCables.eliminarCable(cable, false);
+                    gestorCables.redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),
+                            cable.getColumnaFin(), cable.getStartX(), cable.getStartY(), cable.getvalor(),
+                            new Objeto("Led_on"));
+                }
+                if (cable.getObjeto().getId().equals("Led_on") && !gestorCables.getestado()) {
+                    gestorCables.eliminarCable(cable, false);
+                    gestorCables.redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),
+                            cable.getColumnaFin(), cable.getStartX(), cable.getStartY(), cable.getvalor(),
+                            new Objeto("Led"));
+                }
+            }
+        });
     }
 }

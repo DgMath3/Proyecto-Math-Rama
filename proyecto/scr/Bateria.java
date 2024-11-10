@@ -36,7 +36,8 @@ public class Bateria {
         bateriaImagen = new ImageView(new Image("/resources/bateria.png"));
         bateriaImagen.setFitWidth(100);
         bateriaImagen.setPreserveRatio(true);
-        bateriaEncendida = true; // Estado inicial de la batería encendida
+        bateriaEncendida = true; 
+        gestorcables.setEstado(bateriaEncendida);
 
         botonVerde = new Button("+");
         botonVerde.setStyle("-fx-background-color: green; -fx-text-fill: white;");
@@ -50,6 +51,10 @@ public class Bateria {
         contenedorBateria.setPadding(new Insets(10));
 
         configurarEventos();
+    }
+    
+    public boolean getestado(){
+        return bateriaEncendida;
     }
 
     private void configurarEventos() {
@@ -65,9 +70,11 @@ public class Bateria {
             if (bateriaEncendida) {
                 bateriaImagen.setImage(new Image("/resources/bateria.png")); // Imagen de batería encendida
                 gestorcables.setEnergia();
+                gestorcables.setEstado(bateriaEncendida); 
             } else {
                 bateriaImagen.setImage(new Image("/resources/bateriaOFF.png")); // Imagen de batería apagada
                 gestorcables.EliminarEnergia(protoboard.getMatriz());
+                gestorcables.setEstado(bateriaEncendida);
             }
         });
     }

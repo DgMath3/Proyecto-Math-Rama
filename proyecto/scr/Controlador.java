@@ -29,7 +29,7 @@ public class Controlador {
                             puntoBus.setFill(color);
                         }
                     }
-                    break; // Rompe el bucle una vez que encuentras un punto con el color correcto
+                    break; 
                 }
             }
         }

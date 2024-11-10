@@ -121,8 +121,6 @@ public class MenuOpciones {
                     // Cargar nuevos cables desde el archivo
                     String rutaArchivo = directorioCables + File.separator + nombreArchivo + ".dat";
                     updown.cargar(gestorCables, rutaArchivo, protoboard, controlador);
-                    mostrarAlerta(AlertType.INFORMATION, "Cargar", "Éxito",
-                            "Cables cargados exitosamente desde " + rutaArchivo);
                 } else {
                     mostrarAlerta(AlertType.INFORMATION, "Carga cancelada", "Información",
                             "No se han cargado nuevos cables.");
@@ -164,7 +162,7 @@ public class MenuOpciones {
                     String rutaArchivo = directorioCables + File.separator + nombreArchivo + ".dat";
                     File archivoAEliminar = new File(rutaArchivo);
                     if (archivoAEliminar.delete()) {
-                        mostrarAlerta(AlertType.INFORMATION, "Borrar", "Éxito", "Archivo borrado exitosamente.");
+
                     } else {
                         mostrarAlerta(AlertType.ERROR, "Borrar", "Error", "No se pudo borrar el archivo.");
                     }
