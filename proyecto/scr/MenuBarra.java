@@ -31,42 +31,68 @@ public class MenuBarra {
         MenuItem resistor = new MenuItem("Resistor");
         resistor.setOnAction(e -> manejarSeleccion("resistor"));
 
-        MenuItem chip = new MenuItem("Chip");
-        chip.setOnAction(e -> manejarSeleccion("chip"));
+        MenuItem chip = new MenuItem("Chip AND");
+        chip.setOnAction(e -> manejarSeleccion("chip AND"));
+
+        MenuItem chip2 = new MenuItem("Chip OR");
+        chip2.setOnAction(e -> manejarSeleccion("chip OR"));
+
+        MenuItem chip3 = new MenuItem("Chip NOT");
+        chip3.setOnAction(e -> manejarSeleccion("chip NOT"));
 
         MenuItem sitch2 = new MenuItem("Switch (grande)");
         sitch2.setOnAction(e -> manejarSeleccion("Switch2"));
 
-        menuAgregar.getItems().addAll(cable_r, cable_b, led, siwtch, resistor, chip, sitch2);
+        menuAgregar.getItems().addAll(cable_r, cable_b, led, siwtch, resistor, chip, chip2, chip3,sitch2);
 
         menuBar.getMenus().add(menuAgregar);
     }
 
     private void manejarSeleccion(String idObjeto) {
         if (seleccionBloqueada) {
-            return; // Si la selección está bloqueada, ignorar el clic
+            return;
         }
-
-        // Crear un temporizador de 1 segundo para evitar múltiples selecciones rápidas
+    
         PauseTransition pausa = new PauseTransition(Duration.seconds(3));
-        pausa.setOnFinished(event -> seleccionBloqueada = false); // Desbloquear después del segundo
-
-        // Ejecutar la selección de objeto
-        seleccionarObjeto(idObjeto);
-
-        // Bloquear nuevas selecciones y empezar el temporizador
+        pausa.setOnFinished(event -> seleccionBloqueada = false);
+    
+        // Definir ID específico para cada chip según el menú seleccionado
+        String idEspecifico;
+        switch (idObjeto) {
+            case "chip NOT":
+                idEspecifico = "NOT";
+                break;
+            case "chip OR":
+                idEspecifico = "OR";
+                break;
+            case "chip AND":
+                idEspecifico = "AND";
+                break;
+            default:
+                idEspecifico = idObjeto; // Otros elementos no cambian el ID
+                break;
+        }
+    
+        seleccionarObjeto(idEspecifico);
+    
         seleccionBloqueada = true;
         pausa.play();
     }
 
     private void seleccionarObjeto(String idObjeto) {
+
+        
         Objeto objeto = new Objeto(idObjeto); // Crear un objeto con el id seleccionado
         cablear.setObjetoSeleccionado(objeto); // Establecer el objeto seleccionado en Cablear
 
         if (onObjetoSeleccionado != null) {
             onObjetoSeleccionado.run();
         }
+
+
     }
+
+    
 
     public void setOnObjetoSeleccionado(Runnable onObjetoSeleccionado) {
         this.onObjetoSeleccionado = onObjetoSeleccionado;
