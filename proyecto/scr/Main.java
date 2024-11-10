@@ -40,6 +40,8 @@ public class Main extends Application {
 
         Bateria bateria = new Bateria(loc, protoboard, controlador, protoboard.getGridPane(), gestorcables, hiloGestor);
 
+        GestorConexiones gestorConexiones = new GestorConexiones(gestorcables);
+
         // Crear un AnchorPane para organizar los componentes
         AnchorPane anchorPane = new AnchorPane();
         anchorPane.setPrefSize(1000, 600); // Tamaño preferido del AnchorPane
@@ -91,11 +93,12 @@ public class Main extends Application {
         primaryStage.setResizable(true); // Permitir maximizar
         primaryStage.show();
 
-        hiloGestor.iniciarActualizacionContinua(protoboard.getMatriz(),100);
+        hiloGestor.iniciarActualizacionContinua(protoboard.getMatriz());
 
         // Manejar el cierre de la aplicación
         primaryStage.setOnCloseRequest(event -> {
             hiloGestor.detenerActualizacion();
+            gestorConexiones.detener();
         });
 
         primaryStage.widthProperty().addListener(new ChangeListener<Number>() {

@@ -48,6 +48,12 @@ public class Objeto {
             pasa = true;
             largo = 3;
             break;
+        case "led_roto":
+            imagen = cargarImagen("/resources/ledroto.png");
+            color = Color.DARKGRAY;
+            pasa = true;
+            largo = 3;
+            break;
         case "Switch":
             imagen = cargarImagen("/resources/switch_off.png");
             color = Color.BLACK;

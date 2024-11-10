@@ -15,47 +15,33 @@ public class HiloGestorCables {
     private volatile boolean running; // Indica si el hilo está en ejecución
     private Protoboard protoboard;
     private Controlador controlador;
-    private List<Cable> cablesAnteriores; // Almacena la lista anterior de cables para verificar cambios
 
     // Constructor
     public HiloGestorCables(GestorCables gestorCables, Protoboard protoboard, Controlador controlador,
             GridPane gridPane) {
         this.gestorCables = gestorCables;
-        this.scheduler = Executors.newScheduledThreadPool(1); // 1 hilo programado
-        this.running = false; // Inicialmente no está corriendo
+        this.scheduler = Executors.newScheduledThreadPool(1);
+        this.running = false;
         this.gridPane = gridPane;
-        this.protoboard = protoboard; // Inicializar protoboard
-        this.controlador = controlador; // Inicializar controlador
-        this.cablesAnteriores = gestorCables.obtenerCables(); // Inicializa con la lista actual de cables
+        this.protoboard = protoboard;
+        this.controlador = controlador;
     }
 
     // Método para iniciar la ejecución periódica con mayor velocidad
-    public void iniciarActualizacionContinua(String[][] matrizEnergia, long periodoMilisegundos) {
+    public void iniciarActualizacionContinua(String[][] matrizEnergia) {
         if (!running) {
             running = true;
             scheduler.scheduleAtFixedRate(() -> {
                 try {
-                    // Verifica si la lista de cables ha cambiado
-                    List<Cable> cablesActuales = gestorCables.obtenerCables();
-                    if (!cablesActuales.equals(cablesAnteriores)) {
-                        reiniciarActualizacion(matrizEnergia, periodoMilisegundos); // Reinicia si hay cambios
-                    } else {
-                        actualizarObjetos(matrizEnergia); // Método que actualiza objetos si no hay cambios
-                    }
+                    actualizarObjetos(matrizEnergia);
+                    actualizarChips(matrizEnergia);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, 0, periodoMilisegundos, TimeUnit.MILLISECONDS); // Empieza de inmediato
+            }, 0, 100, TimeUnit.MILLISECONDS);
         }
     }
-
-    // Método para reiniciar la actualización cuando cambian los cables
-    private void reiniciarActualizacion(String[][] matrizEnergia, long periodoMilisegundos) {
-        detenerActualizacion(); // Detiene la ejecución actual
-        cablesAnteriores = gestorCables.obtenerCables(); // Actualiza la lista de cables
-        iniciarActualizacionContinua(matrizEnergia, periodoMilisegundos); // Reinicia la actualización
-    }
-
+    
     // Método para detener la ejecución
     public void detenerActualizacion() {
         if (!running) {
@@ -77,19 +63,12 @@ public class HiloGestorCables {
 
     // Método para actualizar objetos
     public void actualizarObjetos(String[][] matrizEnergia) {
-        if (gestorCables.Espera()) {
-            return; // No hacer nada si está en espera
-        }
-
         List<Cable> cables = gestorCables.obtenerCables();
 
         if (cables.isEmpty()) {
             return; // No hacer nada si la lista está vacía
         }
-
-        // Crear un ExecutorService para procesar en paralelo
-        int numHilos = 7;
-        ExecutorService executor = Executors.newFixedThreadPool(numHilos);
+        ExecutorService executor = Executors.newFixedThreadPool(1);
 
         for (Cable cable : cables) {
             executor.submit(() -> {
@@ -103,7 +82,37 @@ public class HiloGestorCables {
 
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    // metodo para los chips 
+    public void actualizarChips(String[][] matrizEnergia) {
+        List<Chip> chips = gestorCables.obtenerChips();
+
+        if (chips.isEmpty()) {
+            return; // No hacer nada si la lista está vacía
+        }
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+
+        for (Chip chip : chips) {
+            executor.submit(() -> {
+                try {
+                    procesarChips(chip);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
                 executor.shutdownNow();
             }
         } catch (InterruptedException e) {
@@ -114,15 +123,8 @@ public class HiloGestorCables {
 
     // Método para procesar el cable
     private void procesarCable(Cable cable, String[][] matrizEnergia) {
-        int filaInicio = cable.getFilaInicio();
-        int columnaInicio = cable.getColumnaInicio();
-        int filaFin = cable.getFilaFin();
-        int columnaFin = cable.getColumnaFin();
-        Objeto objeto = cable.getObjeto();
-
-        // Verificación de cables
-        if (objeto.getpasa()) {
-            actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+        if (cable.getObjeto().getpasa()) {
+            actualizarEnergia(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),  cable.getColumnaFin(), matrizEnergia);
         }
     }
 
@@ -164,5 +166,11 @@ public class HiloGestorCables {
 
         controlador.actualizarBuses(protoboard.getGridPane());
         controlador.ActualizarProtoboard(protoboard.getGridPane());
+    }
+
+    private void procesarChips(Chip chip){
+        if (true){
+
+        }
     }
 }
