@@ -1,5 +1,6 @@
 import javafx.application.Platform;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GestorConexiones {
 
@@ -13,13 +14,16 @@ public class GestorConexiones {
 
     private void iniciarBusquedaConexiones() {
         hiloConexiones = new Thread(() -> {
-            while (!Thread.currentThread().isInterrupted()) {
-                for (Cable cable : gestorCables.obtenerCables()) {
-                    if (cable.getObjeto().getId().equals("cablegen+")
-                            || cable.getObjeto().getId().equals("cablegen-")) {
+            while (true) {
+                List<Cable> cables = gestorCables.obtenerCables();
+
+                for (Cable cable : cables) {
+                    if ("cablegen+".equals(cable.getObjeto().getId())
+                            || "cablegen-".equals(cable.getObjeto().getId())) {
                         procesarConexion(cable);
                     }
                 }
+
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -28,7 +32,7 @@ public class GestorConexiones {
             }
         });
 
-        hiloConexiones.setDaemon(true); // Permite que el hilo se detenga al cerrar la aplicación
+        hiloConexiones.setDaemon(true);
         hiloConexiones.start();
     }
 
@@ -40,12 +44,13 @@ public class GestorConexiones {
     }
 
     private void procesarConexion(Cable cableInicial) {
-        ArrayList<Cable> conexion = new ArrayList<>();
+        List<Cable> conexion = new ArrayList<>();
         conexion.add(cableInicial);
         Cable anterior = cableInicial;
 
         int i = 0;
-        while (i < gestorCables.obtenerCables().size()) {
+        while (i < gestorCables.obtenerCables().size() * 2) {
+
             Cable siguiente = buscar(anterior, conexion);
 
             if (siguiente != null && !conexion.contains(siguiente)) {
@@ -64,17 +69,19 @@ public class GestorConexiones {
         }
     }
 
-    private Cable buscar(Cable cable, ArrayList<Cable> Conexion) {
+    private Cable buscar(Cable cable, List<Cable> Conexion) {
         for (Cable cable2 : gestorCables.obtenerCables()) {
-            if ((encontrar(cable2.getFilaInicio(), cable2.getColumnaInicio(), cable) != null
-                    || encontrarv2(cable2.getFilaInicio(), cable2.getColumnaInicio(), cable) != null)) {
-                if (!Conexion.contains(cable2)) {
-                    return cable2;
-                }
-            } else if ((encontrar(cable2.getFilaFin(), cable2.getColumnaFin(), cable) != null
-                    || encontrarv2(cable2.getFilaFin(), cable2.getColumnaFin(), cable) != null)) {
-                if (!Conexion.contains(cable2)) {
-                    return cable2;
+            if (cable != cable2) {
+                if ((encontrar(cable2.getFilaInicio(), cable2.getColumnaInicio(), cable) != null
+                        || encontrarv2(cable2.getFilaInicio(), cable2.getColumnaInicio(), cable) != null)) {
+                    if (!Conexion.contains(cable2)) {
+                        return cable2;
+                    }
+                } else if ((encontrar(cable2.getFilaFin(), cable2.getColumnaFin(), cable) != null
+                        || encontrarv2(cable2.getFilaFin(), cable2.getColumnaFin(), cable) != null)) {
+                    if (!Conexion.contains(cable2)) {
+                        return cable2;
+                    }
                 }
             }
         }
@@ -86,18 +93,19 @@ public class GestorConexiones {
             if (fila == cable.getFilaInicio()) {
                 return cable;
             }
-        }
-        if (fila > 11 && cable.getFilaInicio() > 11) {
+        } else if (fila > 11 && cable.getFilaInicio() > 11) {
             if (fila == cable.getFilaInicio()) {
                 return cable;
             }
-        }
-        if (fila <= 7 && cable.getFilaInicio() <= 7) {
+        } else if (1 < fila && fila <= 7 && 1 < cable.getFilaInicio() && cable.getFilaInicio() <= 7) {
             if (columna == cable.getColumnaInicio()) {
-                return cable;
+                if (!"cablegen+".equals(cable.getObjeto().getId())
+                && !"cablegen-".equals(cable.getObjeto().getId())){
+                    return cable;
+                }
+
             }
-        }
-        if (fila > 7 && cable.getFilaInicio() > 7) {
+        } else if (fila < 12 && fila > 7 && cable.getFilaInicio() <12 && cable.getFilaInicio() > 7) {
             if (columna == cable.getColumnaInicio()) {
                 return cable;
             }
@@ -110,18 +118,15 @@ public class GestorConexiones {
             if (fila == cable.getFilaFin()) {
                 return cable;
             }
-        }
-        if (fila > 11 && cable.getFilaFin() > 11) {
+        } else if (fila > 11 && cable.getFilaFin() > 11) {
             if (fila == cable.getFilaFin()) {
                 return cable;
             }
-        }
-        if (fila <= 7 && cable.getFilaFin() <= 7) {
+        } else if (1 < fila && fila <= 7 && cable.getFilaFin() < 1 && cable.getFilaFin() <= 7) {
             if (columna == cable.getColumnaFin()) {
                 return cable;
             }
-        }
-        if (fila > 7 && cable.getFilaFin() > 7) {
+        } else if ( fila < 12 && fila > 7 && cable.getFilaFin() < 12 && cable.getFilaFin() > 7) {
             if (columna == cable.getColumnaFin()) {
                 return cable;
             }
@@ -129,16 +134,22 @@ public class GestorConexiones {
         return null;
     }
 
-    private void actualizarConexion(ArrayList<Cable> conexiones) {
+    private void actualizarConexion(List<Cable> conexiones) {
         Platform.runLater(() -> {
             for (Cable cable : conexiones) {
-                if (cable.getObjeto().getId().equals("Led") && gestorCables.getestado()) {
+                if (conexiones.size() < 4) {
+                    if (cable.getObjeto().getId().equals("Led") && gestorCables.getestado()) {
+                        gestorCables.eliminarCable(cable, false);
+                        gestorCables.redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),
+                                cable.getColumnaFin(), cable.getStartX(), cable.getStartY(), cable.getvalor(),
+                                new Objeto("led_roto"));
+                    }
+                } else if (cable.getObjeto().getId().equals("Led") && gestorCables.getestado()) {
                     gestorCables.eliminarCable(cable, false);
                     gestorCables.redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),
                             cable.getColumnaFin(), cable.getStartX(), cable.getStartY(), cable.getvalor(),
                             new Objeto("Led_on"));
-                }
-                if (cable.getObjeto().getId().equals("Led_on") && !gestorCables.getestado()) {
+                } else if (cable.getObjeto().getId().equals("Led_on") && !gestorCables.getestado()) {
                     gestorCables.eliminarCable(cable, false);
                     gestorCables.redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),
                             cable.getColumnaFin(), cable.getStartX(), cable.getStartY(), cable.getvalor(),

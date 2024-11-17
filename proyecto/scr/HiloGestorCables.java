@@ -13,8 +13,8 @@ public class HiloGestorCables {
     private final ScheduledExecutorService scheduler;
     private final GridPane gridPane;
     private volatile boolean running; // Indica si el hilo está en ejecución
-    private Protoboard protoboard;
-    private Controlador controlador;
+    private final Protoboard protoboard;
+    private final Controlador controlador;
 
     // Constructor
     public HiloGestorCables(GestorCables gestorCables, Protoboard protoboard, Controlador controlador,
@@ -34,14 +34,13 @@ public class HiloGestorCables {
             scheduler.scheduleAtFixedRate(() -> {
                 try {
                     actualizarObjetos(matrizEnergia);
-                    actualizarChips(matrizEnergia);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }, 0, 100, TimeUnit.MILLISECONDS);
         }
     }
-    
+
     // Método para detener la ejecución
     public void detenerActualizacion() {
         if (!running) {
@@ -64,12 +63,15 @@ public class HiloGestorCables {
     // Método para actualizar objetos
     public void actualizarObjetos(String[][] matrizEnergia) {
         List<Cable> cables = gestorCables.obtenerCables();
+        List<Chip> chips = gestorCables.obtenerChips(); // Obtener la lista de chips desde GestorCables
 
-        if (cables.isEmpty()) {
-            return; // No hacer nada si la lista está vacía
+        if (cables.isEmpty() && chips.isEmpty()) {
+            return; // No hacer nada si no hay cables ni chips
         }
+
         ExecutorService executor = Executors.newFixedThreadPool(1);
 
+        // Procesar cables
         for (Cable cable : cables) {
             executor.submit(() -> {
                 try {
@@ -80,30 +82,11 @@ public class HiloGestorCables {
             });
         }
 
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            executor.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    // metodo para los chips 
-    public void actualizarChips(String[][] matrizEnergia) {
-        List<Chip> chips = gestorCables.obtenerChips();
-
-        if (chips.isEmpty()) {
-            return; // No hacer nada si la lista está vacía
-        }
-        ExecutorService executor = Executors.newFixedThreadPool(1);
-
+        // Procesar chips
         for (Chip chip : chips) {
             executor.submit(() -> {
                 try {
-                    procesarChips(chip);
+                    procesarChip(chip, matrizEnergia);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -121,10 +104,104 @@ public class HiloGestorCables {
         }
     }
 
+    // Método para procesar un chip
+    private void procesarChip(Chip chip, String[][] matrizEnergia) {
+        String tipoChip = chip.getTipoChip();
+
+        // Lógica específica para el chip según su tipo (AND, OR, NOT)
+        switch (tipoChip) {
+        case "AND":
+            procesarChipAND(chip, matrizEnergia);
+            break;
+        case "OR":
+            procesarChipOR(chip, matrizEnergia);
+            break;
+        case "NOT":
+            procesarChipNOT(chip, matrizEnergia);
+            break;
+        }
+    }
+
+    // Procesamiento de un chip AND
+    // Procesamiento de un chip AND
+    private void procesarChipAND(Chip chip, String[][] matrizEnergia) {
+        int filaInicio = chip.getFilaInicio();
+        int columnaInicio = chip.getColumnaInicio();
+        int filaFin = chip.getFilaFin();
+        int columnaFin = chip.getColumnaFin();
+
+        // Lógica: ambas entradas deben ser positivas o negativas para producir una
+        // salida
+        if (matrizEnergia[filaInicio][columnaInicio].equals("+") && matrizEnergia[filaFin][columnaFin].equals("-")) {
+            for (int i = columnaInicio + 1; i < columnaFin - 2; i++) {
+                if (matrizEnergia[filaInicio][i].equals("") && matrizEnergia[filaInicio][i + 1].equals("")) {
+                    matrizEnergia[filaFin - 1][columnaFin - 3] = "+";
+                    protoboard.cambiarColor(filaFin, columnaFin, Color.BLUE);
+                    controlador.actualizarBuses(protoboard.getGridPane());
+                    controlador.ActualizarProtoboard(protoboard.getGridPane());
+                    protoboard.actualizarMatriz(gridPane);
+                }
+            }
+        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")
+                && matrizEnergia[filaInicio][columnaFin].equals("-")) {
+            matrizEnergia[filaFin][columnaFin] = "-";
+        } else {
+            matrizEnergia[filaFin][columnaFin] = "|"; // Neutro si no cumple condiciones
+        }
+
+        aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+    }
+
+    // Procesamiento de un chip OR
+    private void procesarChipOR(Chip chip, String[][] matrizEnergia) {
+        int filaInicio = chip.getFilaInicio();
+        int columnaInicio = chip.getColumnaInicio();
+        int filaFin = chip.getFilaFin();
+        int columnaFin = chip.getColumnaFin();
+
+        // Lógica: una entrada positiva o negativa produce una salida
+        if (matrizEnergia[filaInicio][columnaInicio].equals("+") || matrizEnergia[filaInicio][columnaFin].equals("+")) {
+            matrizEnergia[filaFin][columnaFin] = "+";
+        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")
+                || matrizEnergia[filaInicio][columnaFin].equals("-")) {
+            matrizEnergia[filaFin][columnaFin] = "-";
+        } else {
+            matrizEnergia[filaFin][columnaFin] = "|"; // Neutro si no cumple condiciones
+        }
+
+        aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+    }
+
+    // Procesamiento de un chip NOT
+    private void procesarChipNOT(Chip chip, String[][] matrizEnergia) {
+        int filaInicio = chip.getFilaInicio();
+        int columnaInicio = chip.getColumnaInicio();
+        int filaFin = chip.getFilaFin();
+        int columnaFin = chip.getColumnaFin();
+
+        // Lógica: invierte la entrada
+        if (matrizEnergia[filaInicio][columnaInicio].equals("+")) {
+            matrizEnergia[filaFin][columnaFin] = "-";
+        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")) {
+            matrizEnergia[filaFin][columnaFin] = "+";
+        } else {
+            matrizEnergia[filaFin][columnaFin] = "|"; // Neutro si no hay entrada
+        }
+
+        aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+    }
+
     // Método para procesar el cable
     private void procesarCable(Cable cable, String[][] matrizEnergia) {
-        if (cable.getObjeto().getpasa()) {
-            actualizarEnergia(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),  cable.getColumnaFin(), matrizEnergia);
+        int filaInicio = cable.getFilaInicio();
+        int columnaInicio = cable.getColumnaInicio();
+        int filaFin = cable.getFilaFin();
+        int columnaFin = cable.getColumnaFin();
+        Objeto objeto = cable.getObjeto();
+
+        // Verificación de cables
+        if (objeto.getpasa()) {
+            actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
         }
     }
 
@@ -166,11 +243,5 @@ public class HiloGestorCables {
 
         controlador.actualizarBuses(protoboard.getGridPane());
         controlador.ActualizarProtoboard(protoboard.getGridPane());
-    }
-
-    private void procesarChips(Chip chip){
-        if (true){
-
-        }
     }
 }
