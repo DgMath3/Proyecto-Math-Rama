@@ -17,8 +17,7 @@ public class HiloGestorCables {
     private final Controlador controlador;
 
     // Constructor
-    public HiloGestorCables(GestorCables gestorCables, Protoboard protoboard, Controlador controlador,
-            GridPane gridPane) {
+    public HiloGestorCables(GestorCables gestorCables, Protoboard protoboard, Controlador controlador, GridPane gridPane) {
         this.gestorCables = gestorCables;
         this.scheduler = Executors.newScheduledThreadPool(1);
         this.running = false;
@@ -63,7 +62,7 @@ public class HiloGestorCables {
     // Método para actualizar objetos
     public void actualizarObjetos(String[][] matrizEnergia) {
         List<Cable> cables = gestorCables.obtenerCables();
-        List<Chip> chips = gestorCables.obtenerChips(); // Obtener la lista de chips desde GestorCables
+        List<Chip> chips = gestorCables.obtenerChips();  // Obtener la lista de chips desde GestorCables
 
         if (cables.isEmpty() && chips.isEmpty()) {
             return; // No hacer nada si no hay cables ni chips
@@ -108,21 +107,21 @@ public class HiloGestorCables {
     private void procesarChip(Chip chip, String[][] matrizEnergia) {
         String tipoChip = chip.getTipoChip();
 
+
         // Lógica específica para el chip según su tipo (AND, OR, NOT)
         switch (tipoChip) {
-        case "AND":
-            procesarChipAND(chip, matrizEnergia);
-            break;
-        case "OR":
-            procesarChipOR(chip, matrizEnergia);
-            break;
-        case "NOT":
-            procesarChipNOT(chip, matrizEnergia);
-            break;
+            case "AND":
+                procesarChipAND(chip, matrizEnergia);
+                break;
+            case "OR":
+                procesarChipOR(chip, matrizEnergia);
+                break;
+            case "NOT":
+                procesarChipNOT(chip, matrizEnergia);
+                break;
         }
     }
 
-    // Procesamiento de un chip AND
     // Procesamiento de un chip AND
     private void procesarChipAND(Chip chip, String[][] matrizEnergia) {
         int filaInicio = chip.getFilaInicio();
@@ -130,27 +129,41 @@ public class HiloGestorCables {
         int filaFin = chip.getFilaFin();
         int columnaFin = chip.getColumnaFin();
 
-        // Lógica: ambas entradas deben ser positivas o negativas para producir una
-        // salida
-        if (matrizEnergia[filaInicio][columnaInicio].equals("+") && matrizEnergia[filaFin][columnaFin].equals("-")) {
-            for (int i = columnaInicio + 1; i < columnaFin - 2; i++) {
-                if (matrizEnergia[filaInicio][i].equals("") && matrizEnergia[filaInicio][i + 1].equals("")) {
-                    matrizEnergia[filaFin - 1][columnaFin - 3] = "+";
-                    protoboard.cambiarColor(filaFin, columnaFin, Color.BLUE);
-                    controlador.actualizarBuses(protoboard.getGridPane());
-                    controlador.ActualizarProtoboard(protoboard.getGridPane());
+        // Lógica: ambas entradas deben ser positivas o negativas para producir una salida
+        if (matrizEnergia[filaInicio][columnaInicio].equals("+") &&
+            matrizEnergia[filaFin][columnaFin].equals("-")) {
+            for (int i = columnaInicio + 1; i < columnaFin ; i = i + 3){
+                if (matrizEnergia[filaInicio][i].equals("+") && matrizEnergia[filaInicio][i + 1].equals("+")){
+                    matrizEnergia[filaInicio][i+2] = "+";
+                    protoboard.cambiarColor(filaInicio, i+2, Color.BLUE);
                     protoboard.actualizarMatriz(gridPane);
+                    i = i + 2;
+                }
+                else if(matrizEnergia[filaInicio][i].equals("-") && matrizEnergia[filaInicio][i + 1].equals("-")){
+                    matrizEnergia[filaFin][i+2] = "-";
+                    protoboard.cambiarColor(filaInicio, i+2, Color.RED);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 2;
                 }
             }
-        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")
-                && matrizEnergia[filaInicio][columnaFin].equals("-")) {
-            matrizEnergia[filaFin][columnaFin] = "-";
-        } else {
-            matrizEnergia[filaFin][columnaFin] = "|"; // Neutro si no cumple condiciones
-        }
-
+            for(int i = columnaInicio ; i < columnaFin - 1 ; i = i + 3){
+                if (matrizEnergia[filaFin][i].equals("+") && matrizEnergia[filaFin][i + 1].equals("+")){
+                    matrizEnergia[filaFin][i+2] = "+";
+                    protoboard.cambiarColor(filaFin, i+2, Color.BLUE);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 2;
+                }
+                else if(matrizEnergia[filaFin][i].equals("-") && matrizEnergia[filaFin][i + 1].equals("-")){
+                    matrizEnergia[filaFin][i+2] = "-";
+                    protoboard.cambiarColor(filaFin, i+2, Color.RED);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 2;
+                }
+            }
         aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+        protoboard.actualizarMatriz(gridPane);
     }
+}
 
     // Procesamiento de un chip OR
     private void procesarChipOR(Chip chip, String[][] matrizEnergia) {
@@ -159,37 +172,111 @@ public class HiloGestorCables {
         int filaFin = chip.getFilaFin();
         int columnaFin = chip.getColumnaFin();
 
-        // Lógica: una entrada positiva o negativa produce una salida
-        if (matrizEnergia[filaInicio][columnaInicio].equals("+") || matrizEnergia[filaInicio][columnaFin].equals("+")) {
-            matrizEnergia[filaFin][columnaFin] = "+";
-        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")
-                || matrizEnergia[filaInicio][columnaFin].equals("-")) {
-            matrizEnergia[filaFin][columnaFin] = "-";
-        } else {
-            matrizEnergia[filaFin][columnaFin] = "|"; // Neutro si no cumple condiciones
-        }
-
+        if (matrizEnergia[filaInicio][columnaInicio].equals("+") &&
+            matrizEnergia[filaFin][columnaFin].equals("-")) {
+            for (int i = columnaInicio + 1; i < columnaFin ; i = i + 3){
+                if (matrizEnergia[filaInicio][i].equals("+") && matrizEnergia[filaInicio][i + 1].equals("|") || matrizEnergia[filaInicio][i].equals("|") && matrizEnergia[filaInicio][i + 1].equals("+")){
+                    matrizEnergia[filaInicio][i+2] = "+";
+                    protoboard.cambiarColor(filaInicio, i+2, Color.BLUE);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 2;
+                }
+                else if(matrizEnergia[filaInicio][i].equals("-") && matrizEnergia[filaInicio][i + 1].equals("|") || matrizEnergia[filaInicio][i].equals("|") && matrizEnergia[filaInicio][i + 1].equals("-")){
+                    matrizEnergia[filaFin][i+2] = "-";
+                    protoboard.cambiarColor(filaInicio, i+2, Color.RED);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 2;
+                }
+            }
+            for(int i = columnaInicio ; i < columnaFin - 1 ; i = i + 3){
+                if (matrizEnergia[filaFin][i].equals("+") && matrizEnergia[filaFin][i + 1].equals("|") || matrizEnergia[filaFin][i].equals("|") && matrizEnergia[filaFin][i + 1].equals("+")){
+                    matrizEnergia[filaFin][i+2] = "+";
+                    protoboard.cambiarColor(filaFin, i+2, Color.BLUE);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 2;
+                }
+                else if(matrizEnergia[filaFin][i].equals("-") && matrizEnergia[filaFin][i + 1].equals("|") || matrizEnergia[filaFin][i].equals("|") && matrizEnergia[filaFin][i + 1].equals("-")){
+                    matrizEnergia[filaFin][i+2] = "-";
+                    protoboard.cambiarColor(filaFin, i+2, Color.RED);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 2;
+                }
+            }
         aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+        protoboard.actualizarMatriz(gridPane);
     }
+}
+
 
     // Procesamiento de un chip NOT
-    private void procesarChipNOT(Chip chip, String[][] matrizEnergia) {
-        int filaInicio = chip.getFilaInicio();
-        int columnaInicio = chip.getColumnaInicio();
-        int filaFin = chip.getFilaFin();
-        int columnaFin = chip.getColumnaFin();
+private void procesarChipNOT(Chip chip, String[][] matrizEnergia) {
+    int filaInicio = chip.getFilaInicio();
+    int columnaInicio = chip.getColumnaInicio();
+    int filaFin = chip.getFilaFin();
+    int columnaFin = chip.getColumnaFin();
 
-        // Lógica: invierte la entrada
-        if (matrizEnergia[filaInicio][columnaInicio].equals("+")) {
-            matrizEnergia[filaFin][columnaFin] = "-";
-        } else if (matrizEnergia[filaInicio][columnaInicio].equals("-")) {
-            matrizEnergia[filaFin][columnaFin] = "+";
-        } else {
-            matrizEnergia[filaFin][columnaFin] = "|"; // Neutro si no hay entrada
+    // Lógica: ambas entradas deben ser positivas o negativas para producir una salida
+    if (matrizEnergia[filaInicio][columnaInicio].equals("+") &&
+        matrizEnergia[filaFin][columnaFin].equals("-")) {
+        
+        // Revisión de la fila de inicio
+        for (int i = columnaInicio + 1; i < columnaFin; i++) {
+            // Si la celda actual es positiva y la celda anterior no tiene energía, pasa la energía
+            if (matrizEnergia[filaInicio][i].equals("+") && matrizEnergia[filaInicio][i - 1].equals("|")) { 
+                matrizEnergia[filaInicio][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                protoboard.cambiarColor(filaInicio, i + 1, Color.LIGHTGRAY);
+                protoboard.actualizarMatriz(gridPane);
+                i = i + 1;
+            } 
+            // Si la celda actual es negativa y la celda anterior no tiene energía, pasa la energía
+            else if (matrizEnergia[filaInicio][i].equals("-") && matrizEnergia[filaInicio][i - 1].equals("|")) { 
+                matrizEnergia[filaFin][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                protoboard.cambiarColor(filaInicio, i + 1, Color.LIGHTGRAY);
+                protoboard.actualizarMatriz(gridPane);
+                i = i + 1;
+            }
+            // Si la celda es neutra (|), pasa energía positiva
+            else if (matrizEnergia[filaInicio][i].equals("|")) {
+                matrizEnergia[filaInicio][i + 1] = "+"; // Se pasa energía positiva
+                protoboard.cambiarColor(filaInicio, i + 1, Color.BLUE);
+                protoboard.actualizarMatriz(gridPane);
+                i = i + 1;
+            }
         }
 
+        // Revisión de la fila de fin
+        for (int i = columnaInicio; i < columnaFin; i++) {
+            // Si la celda es positiva y la celda anterior no tiene energía, pasa la energía
+            if (matrizEnergia[filaFin][i].equals("+") && matrizEnergia[filaFin][i - 1].equals("|")) { 
+                matrizEnergia[filaFin][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                protoboard.cambiarColor(filaFin, i + 1, Color.LIGHTGRAY);
+                protoboard.actualizarMatriz(gridPane);
+                i = i + 1;
+            }
+            // Si la celda es negativa y la celda anterior no tiene energía, pasa la energía
+            else if (matrizEnergia[filaFin][i].equals("-") && matrizEnergia[filaFin][i - 1].equals("|")) { 
+                matrizEnergia[filaFin][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                protoboard.cambiarColor(filaFin, i + 1, Color.LIGHTGRAY);
+                protoboard.actualizarMatriz(gridPane);
+                i = i + 1;
+            }
+            // Si la celda es neutra (|), pasa energía positiva
+            else if (matrizEnergia[filaFin][i].equals("|")) {
+                matrizEnergia[filaFin][i + 1] = "+"; // Se pasa energía positiva
+                protoboard.cambiarColor(filaFin, i + 1, Color.BLUE);
+                protoboard.actualizarMatriz(gridPane);
+                i = i + 1;
+            }
+        }
+
+        // Aplicar colores después de procesar
         aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+        protoboard.actualizarMatriz(gridPane);
     }
+}
+
+
+
 
     // Método para procesar el cable
     private void procesarCable(Cable cable, String[][] matrizEnergia) {
