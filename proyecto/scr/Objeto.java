@@ -2,6 +2,7 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 public class Objeto {
+
     private String tipoChip; 
     private String id;
     private Image imagen;
@@ -12,14 +13,6 @@ public class Objeto {
     public Objeto(String id) {
         this.id = id;
         cargarImagenYColor();
-
-        if (id.equals("AND")) {
-            this.tipoChip = "AND";
-        } else if (id.equals("OR")) {
-            this.tipoChip = "OR";
-        } else if (id.equals("NOT")) {
-            this.tipoChip = "NOT";
-        }
     }
 
     private void cargarImagenYColor() {
@@ -84,19 +77,19 @@ public class Objeto {
             pasa = false;
             largo = 99;
             break;
-        case "chip AND":
+        case "AND":
             imagen = cargarImagen("/resources/nada.png");
             color = Color.PURPLE;
             pasa = true;
             largo = 99;
             break;
-        case "chip NOT":
+        case "NOT":
             imagen = cargarImagen("/resources/nada.png");
             color = Color.PURPLE;
             pasa = true;
             largo = 99;
             break;
-        case "chip OR":
+        case "OR":
             imagen = cargarImagen("/resources/nada.png");
             color = Color.PURPLE;
             pasa = true;

@@ -15,6 +15,7 @@ import java.util.Optional;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextInputDialog;
+
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GestorCables {
@@ -354,6 +355,27 @@ public class GestorCables {
         return true; // Cable dibujado exitosamente
     }
 
+    public void resetLed() {
+        for (Cable cable2 : obtenerCables()) {
+            if (cable2.getObjeto().getId().equals("Led_on")) {
+                redibujar(cable2.getFilaInicio(), cable2.getColumnaInicio(), cable2.getFilaFin(),
+                        cable2.getColumnaFin(), cable2.getStartX(), cable2.getStartY(), cable2.getvalor(),
+                        new Objeto("Led"));
+                eliminarCable(cable2, false);
+            }
+        }
+    }
+    public void resetcablegen() {
+        for (Cable cable2 : obtenerCables()) {
+            if (cable2.getObjeto().getId().equals("cablegen+") || cable2.getObjeto().getId().equals("cablegen-")) {
+                redibujar(cable2.getFilaInicio(), cable2.getColumnaInicio(), cable2.getFilaFin(),
+                        cable2.getColumnaFin(), cable2.getStartX(), cable2.getStartY(), cable2.getvalor(),
+                        cable2.getObjeto());
+                eliminarCable(cable2, false);
+            }
+        }
+    }
+
     private void manejarclicks(MouseEvent event) {
         if (event.getButton() == MouseButton.SECONDARY) { // Detecta clic derecho
             Cable cableToRemove = null;
@@ -364,7 +386,11 @@ public class GestorCables {
                 }
             }
             if (cableToRemove != null) {
-                eliminarCable(cableToRemove, true);
+                eliminarCable(cableToRemove, false);
+                resetLed();
+                resetcablegen();
+                eliminarEnergiaConRetraso(protoboard.getMatriz(), 100);
+                setEnergia();
                 event.consume(); // Evita que el evento se propague
             }
             Chip chipToRemove = null;
@@ -404,6 +430,8 @@ public class GestorCables {
             }
             if (cableToChange != null) {
                 cambiarCable(cableToChange, objetoSeleccionado);
+                resetLed();
+                resetcablegen();
                 event.consume(); // Evita que el evento se propague
             }
         } else if (event.getButton() == MouseButton.PRIMARY && objetoSeleccionado == null) {
@@ -414,7 +442,7 @@ public class GestorCables {
                     break;
                 }
             }
-            if (cableCambiado != null && cableCambiado.getObjeto() != null) {
+            if (cableCambiado != null) {
                 if (cableCambiado.getObjeto().getId().equals("Switch")) {
                     cambiarCable(cableCambiado, new Objeto("SwitchOn"));
                     eliminarCable(cableCambiado, false);
@@ -432,7 +460,7 @@ public class GestorCables {
                             cableCambiado.getFilaFin(), cableCambiado.getColumnaFin(), 0, 0, valor,
                             new Objeto("resistor"));
                     eliminarCable(cableCambiado, false);
-                    event.consume(); // Evita que el evento se propague
+                    event.consume();
 
                 }
 
@@ -522,11 +550,6 @@ public class GestorCables {
 
         // Eliminar el cable de la lista
         cables.remove(cable);
-
-        if (nose) {
-            EliminarEnergia(protoboard.getMatriz());
-            setEnergia();
-        }
     }
 
     public String verificarObjetoEnPosicion(int fila, int columna, Cable cable) {
