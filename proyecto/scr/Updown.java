@@ -24,6 +24,7 @@ public class Updown {
                 out.writeInt(chip.getFilaInicio());
                 out.writeInt(chip.getColumnaInicio());
                 out.writeUTF(chip.getId());
+                out.writeInt(chip.getlargo());
             }
 
             System.out.println("Cables y chips guardados en " + nombreArchivo);
@@ -45,7 +46,7 @@ public class Updown {
                 int filaFin = in.readInt();
                 int columnaFin = in.readInt();
                 Double valor = in.readDouble();
-                Objeto objeto = new Objeto(id);
+                Objeto objeto = new Objeto(id, "x");
                 gestorCables.redibujar(filaInicio, columnaInicio, filaFin, columnaFin, startX, startY, valor, objeto);
             }
 
@@ -55,7 +56,8 @@ public class Updown {
                 int filaInicio = in.readInt();
                 int columnaInicio = in.readInt();
                 String id = in.readUTF();
-                gestorCables.colocarChip(filaInicio, columnaInicio, id);
+                int largo = in.readInt();
+                gestorCables.colocarChip(filaInicio, columnaInicio, id, largo);
             }
 
             gestorCables.setEnergia();

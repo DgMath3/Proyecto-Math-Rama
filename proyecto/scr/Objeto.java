@@ -3,15 +3,17 @@ import javafx.scene.paint.Color;
 
 public class Objeto {
 
-    private String tipoChip; 
+    private String tipoChip;
     private String id;
     private Image imagen;
     private Color color;
     private int largo;
     private boolean pasa;
+    private String colorled;
 
-    public Objeto(String id) {
+    public Objeto(String id, String Led) {
         this.id = id;
+        this.colorled = Led;
         cargarImagenYColor();
     }
 
@@ -36,7 +38,23 @@ public class Objeto {
             largo = 3;
             break;
         case "Led_on":
-            imagen = cargarImagen("/resources/led_on.png");
+            switch (colorled) {
+            case "Azul":
+                imagen = cargarImagen("/resources/led_azul.png");
+                break;
+            case "Verde":
+                imagen = cargarImagen("/resources/led_verde.png");
+                break;
+            case "Amarillo":
+                imagen = cargarImagen("/resources/led_amarillo.png");
+                break;
+            case "Morado":
+                imagen = cargarImagen("/resources/led_morado.png");
+                break;
+            default:
+                imagen = cargarImagen("/resources/led_on.png");
+                break;
+            }
             color = Color.DARKGRAY;
             pasa = true;
             largo = 3;
@@ -117,6 +135,10 @@ public class Objeto {
             System.err.println("Error al cargar la imagen: " + e.getMessage());
             return null; // O asignar una imagen por defecto
         }
+    }
+
+    public String getLed() {
+        return colorled;
     }
 
     public String getTipoChip() {

@@ -20,7 +20,6 @@ public class Bateria {
     private Color colorEsperado;
     private GridPane gridPane;
     private GestorCables gestorcables;
-    private double startX, startY;
     private boolean bateriaEncendida;
 
     // Constructor actualizado para recibir HiloGestorCables
@@ -72,30 +71,45 @@ public class Bateria {
                 gestorcables.setEnergia();
                 gestorcables.setEstado(bateriaEncendida); 
                 gestorcables.resetLed();
+                gestorcables.resetcablegen();
             } else {
                 bateriaImagen.setImage(new Image("/resources/bateriaOFF.png")); // Imagen de batería apagada
                 gestorcables.EliminarEnergia(protoboard.getMatriz());
                 gestorcables.setEstado(bateriaEncendida);
                 gestorcables.resetLed();
+                gestorcables.resetcablegen();
             }
         });
+    }
+
+    public void actualizar(){
+        double botonVerdeX = botonVerde.localToScene(botonVerde.getBoundsInLocal()).getMinX();
+        double botonVerdeY = botonVerde.localToScene(botonVerde.getBoundsInLocal()).getMinY();
+
+        double sceneX = botonVerde.getScene().getX();
+        double sceneY = botonVerde.getScene().getY();
+
+        gestorcables.setbateria(botonVerdeX + sceneX, botonVerdeY + sceneY);
     }
 
     private void seleccionarColor(Color color, Node boton) {
         this.colorEsperado = color;
     
-        // Obtener las coordenadas actuales de la imagen de la batería
-        startX = bateriaImagen.localToScene(bateriaImagen.getBoundsInLocal()).getMinX();
-        startY = bateriaImagen.localToScene(bateriaImagen.getBoundsInLocal()).getMinY();
-    
-        Objeto objeto = new Objeto(color == Color.BLUE ? "cablegen+" : "cablegen-");
+        Objeto objeto = new Objeto(color == Color.BLUE ? "cablegen+" : "cablegen-", "x");
         gestorcables.setObjetoSeleccionado(objeto);
         gridPane.setOnMouseClicked(this::manejarClickGridPane);
     }
     
     private void manejarClickGridPane(MouseEvent evento) {
-        if (evento.getButton() != javafx.scene.input.MouseButton.PRIMARY)
+        if (evento.getButton() != javafx.scene.input.MouseButton.PRIMARY){
             return;
+        }
+
+        // Obtener las coordenadas actuales de la imagen de la batería
+        double botonVerdeX = botonVerde.localToScene(botonVerde.getBoundsInLocal()).getMinX();
+        double botonVerdeY = botonVerde.localToScene(botonVerde.getBoundsInLocal()).getMinY();
+        double sceneX = botonVerde.getScene().getX();
+        double sceneY = botonVerde.getScene().getY();
     
         // Obtener las coordenadas del clic del usuario en el gridPane
         double endX = evento.getX();
@@ -107,7 +121,7 @@ public class Bateria {
         int columnaFin = x2[1];
 
         // Verifica y dibuja el cable desde la batería hasta el punto donde hizo clic el usuario
-        boolean exito = gestorcables.dibujarCable(startX, startY, endX, endY, filaFin, columnaFin, 1);
+        boolean exito = gestorcables.dibujarCable(botonVerdeX + sceneX, botonVerdeY + sceneY, endX, endY, filaFin, columnaFin, 1);
         if (exito) {
             // Aplica el color y actualiza el protoboard si la batería está encendida
             protoboard.cambiarColor(filaFin, columnaFin, colorEsperado);
