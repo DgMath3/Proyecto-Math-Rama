@@ -17,8 +17,9 @@ public class Cable {
     private final int filaFin; // Nueva variable para la fila de fin
     private final int columnaFin; // Nueva variable para la columna de fin
     private final double valor;
+    private final String color;
 
-    public Cable(double startX, double startY, double endX, double endY, Paint color, Objeto objeto,ImageView imageView, boolean pasaEnergia, int filaInicio, int columnaInicio, int filaFin, int columnaFin, double valor) {
+    public Cable(double startX, double startY, double endX, double endY, Paint color, Objeto objeto,ImageView imageView, boolean pasaEnergia, int filaInicio, int columnaInicio, int filaFin, int columnaFin, double valor, String color_led) {
         this.linea = new Line(startX, startY, endX, endY);
         this.linea.setStroke(color);
         this.linea.setStrokeWidth(8); // Ajusta el grosor aquí
@@ -28,6 +29,7 @@ public class Cable {
         this.endY = endY;
         this.imageView = imageView;
         this.valor = valor;
+        this.color = color_led;
 
         this.objeto = objeto; // Inicializar el objeto
         this.pasaEnergia = pasaEnergia;
@@ -45,6 +47,7 @@ public class Cable {
         });
     }
 
+    public String getColorled() { return color;}
     public double getStartX() { return linea.getStartX();}
     public double getStartY() { return linea.getStartY();}
     public double getEndX() { return linea.getEndX();}

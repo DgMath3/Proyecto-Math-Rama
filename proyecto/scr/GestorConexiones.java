@@ -142,18 +142,18 @@ public class GestorConexiones {
                         gestorCables.eliminarCable(cable, false);
                         gestorCables.redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),
                                 cable.getColumnaFin(), cable.getStartX(), cable.getStartY(), cable.getvalor(),
-                                new Objeto("led_roto"));
+                                new Objeto("led_roto", "x"));
                     }
                 } else if (cable.getObjeto().getId().equals("Led") && gestorCables.getestado()) {
                     gestorCables.eliminarCable(cable, false);
                     gestorCables.redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),
                             cable.getColumnaFin(), cable.getStartX(), cable.getStartY(), cable.getvalor(),
-                            new Objeto("Led_on"));
+                            new Objeto("Led_on", cable.getColorled()));
                 } else if (cable.getObjeto().getId().equals("Led_on") && !gestorCables.getestado()) {
                     gestorCables.eliminarCable(cable, false);
                     gestorCables.redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(),
                             cable.getColumnaFin(), cable.getStartX(), cable.getStartY(), cable.getvalor(),
-                            new Objeto("Led"));
+                            new Objeto("Led", cable.getColorled()));
                 }
             }
         });

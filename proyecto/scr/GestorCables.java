@@ -32,6 +32,9 @@ public class GestorCables {
     private List<Chip> chips;
     private int[][] matrizConexiones;
     private boolean estado;
+    private int largo;
+    private double bateriax;
+    private double bateriay;
 
     public GestorCables(GridPane gridPane, Loc loc, Protoboard protoboard, Controlador controlador) {
         this.gridPane = gridPane;
@@ -49,6 +52,7 @@ public class GestorCables {
         // Asegurarse de que el tamaño del Pane de dibujo sea correcto
         this.configurarEventos();
         this.drawingPane.setPrefSize(gridPane.getWidth(), gridPane.getHeight());
+
     }
 
     public void inicializarMatrizConexiones() {
@@ -79,6 +83,10 @@ public class GestorCables {
             manejarclicks(event);
         });
 
+    }
+
+    public void setlargo(int largo) {
+        this.largo = largo;
     }
 
     private void clicpresionado(MouseEvent event) {
@@ -113,6 +121,7 @@ public class GestorCables {
                         drawing = false;
                         cablearActivo = false; // Desactiva la funcionalidad de cablear después de dibujar
                         objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
+                        resetcablegen();
                     }
                 }
             });
@@ -129,13 +138,13 @@ public class GestorCables {
             System.out.println("Tipo de chip: " + tipoChip);
             switch (tipoChip) {
             case "AND":
-                colocarChip(cl[0], cl[1], "AND");
+                colocarChip(cl[0], cl[1], "AND", largo);
                 break;
             case "OR":
-                colocarChip(cl[0], cl[1], "OR");
+                colocarChip(cl[0], cl[1], "OR", largo);
                 break;
             case "NOT":
-                colocarChip(cl[0], cl[1], "NOT");
+                colocarChip(cl[0], cl[1], "NOT", largo);
                 break;
             default:
                 // Si el chip no es uno de los tres tipos conocidos
@@ -260,7 +269,7 @@ public class GestorCables {
 
         // Crear el cable utilizando las coordenadas centradas
         Cable cable = new Cable(inicio[0], inicio[1], fin[0], fin[1], color, objetoSeleccionado, imageView, pasa,
-                filaInicio, columnaInicio, filaFin, columnaFin, valor);
+                filaInicio, columnaInicio, filaFin, columnaFin, valor, objetoSeleccionado.getLed());
 
         // Añadir el cable a la lista y al Pane de dibujo
         cables.add(cable);
@@ -295,6 +304,7 @@ public class GestorCables {
         matrizConexiones[filaInicio][columnaInicio] = 1;
         objetoSeleccionado = null;
         drawing = false;
+        resetcablegen();
         return true;
     }
 
@@ -319,7 +329,7 @@ public class GestorCables {
 
         // Crear el cable utilizando las coordenadas centradas
         Cable cable = new Cable(inicio[0], inicio[1], fin[0], fin[1], color, objeto, imageView, pasa, filaInicio,
-                columnaInicio, filaFin, columnaFin, valor);
+                columnaInicio, filaFin, columnaFin, valor, objeto.getLed());
 
         // Añadir el cable a la lista y al Pane de dibujo
         cables.add(cable);
@@ -360,11 +370,12 @@ public class GestorCables {
             if (cable2.getObjeto().getId().equals("Led_on")) {
                 redibujar(cable2.getFilaInicio(), cable2.getColumnaInicio(), cable2.getFilaFin(),
                         cable2.getColumnaFin(), cable2.getStartX(), cable2.getStartY(), cable2.getvalor(),
-                        new Objeto("Led"));
+                        new Objeto("Led", cable2.getColorled()));
                 eliminarCable(cable2, false);
             }
         }
     }
+
     public void resetcablegen() {
         for (Cable cable2 : obtenerCables()) {
             if (cable2.getObjeto().getId().equals("cablegen+") || cable2.getObjeto().getId().equals("cablegen-")) {
@@ -444,21 +455,21 @@ public class GestorCables {
             }
             if (cableCambiado != null) {
                 if (cableCambiado.getObjeto().getId().equals("Switch")) {
-                    cambiarCable(cableCambiado, new Objeto("SwitchOn"));
+                    cambiarCable(cableCambiado, new Objeto("SwitchOn", "x"));
                     eliminarCable(cableCambiado, false);
                 } else if (cableCambiado.getObjeto().getId().equals("SwitchOn")) {
                     cables.remove(cableCambiado);
-                    cambiarCable(cableCambiado, new Objeto("Switch"));
+                    cambiarCable(cableCambiado, new Objeto("Switch", "x"));
                     event.consume();
                     eliminarEnergiaConRetraso(protoboard.getMatriz(), 50);
                     eliminarEnergiaConRetraso(protoboard.getMatriz(), 100);
                     eliminarEnergiaConRetraso(protoboard.getMatriz(), 150);
                     eliminarEnergiaConRetraso(protoboard.getMatriz(), 200);
                 } else if (cableCambiado.getObjeto().getId().equals("resistor")) {
-                    double valor = solicitarValor("Configuracion resistor", cableCambiado.getvalor());
+                    double valor = solicitarValor("Configuracion resistor", "valor actual: ", cableCambiado.getvalor());
                     redibujar(cableCambiado.getFilaInicio(), cableCambiado.getColumnaInicio(),
                             cableCambiado.getFilaFin(), cableCambiado.getColumnaFin(), 0, 0, valor,
-                            new Objeto("resistor"));
+                            new Objeto("resistor", "x"));
                     eliminarCable(cableCambiado, false);
                     event.consume();
 
@@ -485,11 +496,11 @@ public class GestorCables {
         }).start();
     }
 
-    private static double solicitarValor(String titulo, double valor) {
+    public static double solicitarValor(String titulo, String texto, double valor) {
         // Crear un cuadro de diálogo de entrada
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(titulo + valor);
-        dialog.setHeaderText("valor actual: " + valor);
+        dialog.setTitle(titulo);
+        dialog.setHeaderText(texto + valor);
         dialog.setContentText("Valor:");
 
         // Mostrar el diálogo y esperar a que el usuario ingrese un valor
@@ -609,6 +620,11 @@ public class GestorCables {
         chips.remove(chip);
     }
 
+    public void setbateria(double bateriax, double bateriay) {
+        this.bateriax = bateriax;
+        this.bateriay = bateriay;
+    }
+
     public void actualizar() {
         // Obtener la lista de cables a partir del método obtenerCables().
         ArrayList<Cable> cables1 = new ArrayList<>(obtenerCables());
@@ -630,19 +646,19 @@ public class GestorCables {
         // Redibujar los cables después de eliminarlos.
         for (Cable cable : cables1) {
             redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(), cable.getColumnaFin(),
-                    cable.getStartX(), cable.getStartY(), cable.getvalor(), cable.getObjeto());
+                    bateriax, bateriay, cable.getvalor(), cable.getObjeto());
         }
 
         for (Chip chip : chips1) {
-            colocarChip(chip.getFilaInicio(), chip.getColumnaInicio(), chip.getId());
+            colocarChip(chip.getFilaInicio(), chip.getColumnaInicio(), chip.getId(), chip.getlargo());
         }
     }
 
-    public void colocarChip(int fila, int columna, String tipo) {
+    public void colocarChip(int fila, int columna, String tipo, int largo) {
         System.err.println(tipo);
 
         // Verificar que no haya chips en las filas 6 y 7
-        for (int i = columna; i < columna + 7; i++) {
+        for (int i = columna; i < columna + largo; i++) {
             if (i >= 0 && i < matrizConexiones[0].length) {
                 // Verificar en la fila 6 y 7 si ya hay un chip
                 if (matrizConexiones[6][i] == 1 || matrizConexiones[7][i] == 1) {
@@ -653,10 +669,10 @@ public class GestorCables {
         }
 
         // Si la posición está libre, proceder a colocar el chip
-        if (fila == 6 && columna + 7 <= 30) {
+        if (fila == 6 && columna + largo <= 30) {
             // Marcar las posiciones de las filas 6 y 7 como ocupadas
             for (int i = fila; i <= fila + 1; i++) {
-                for (int j = columna; j <= columna + 6; j++) {
+                for (int j = columna; j <= columna + largo - 1; j++) {
                     if (i >= 0 && i < matrizConexiones.length && j >= 0 && j < matrizConexiones[i].length) {
                         matrizConexiones[i][j] = 1; // Marcar como ocupado
                     }
@@ -666,16 +682,16 @@ public class GestorCables {
             // Crear las imágenes y el chip
             Image imagenChip = new Image("/resources/chip.png");
             Image imagenChip1 = new Image("/resources/chip1.png");
-            Chip nuevoChip = new Chip(fila, columna, fila + 1, columna + 6, 7, tipo);
+            Chip nuevoChip = new Chip(fila, columna, fila + 1, columna + 6, largo, tipo);
 
             // Colocar las imágenes en las filas 6 y 7 y guardar los ImageViews
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < largo; i++) {
                 ImageView imageViewFila6 = colocarImagenEnPosicion(fila, columna + i, imagenChip, 20);
                 ImageView imageViewFila7 = colocarImagenEnPosicion(fila + 1, columna + i, imagenChip1, -10);
 
                 // Guardar las imágenes en el Chip
                 nuevoChip.setImageView(i, imageViewFila6); // Fila 6
-                nuevoChip.setImageView(i + 7, imageViewFila7); // Fila 7
+                nuevoChip.setImageView(i + largo, imageViewFila7); // Fila 7
             }
 
             // Guardar el nuevo chip en la lista de chips

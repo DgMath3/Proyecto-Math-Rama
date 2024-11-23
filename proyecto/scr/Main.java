@@ -56,24 +56,14 @@ public class Main extends Application {
         HBox menuLayout = new HBox();
         menuLayout.getChildren().addAll(menuBarra.getMenuBar(), menuOpciones.getMenuBar());
 
-        // Añadir el HBox de menús al VBox principal
         mainLayout.getChildren().add(menuLayout);
 
-        // Crear un HBox para organizar el protoboard y la batería horizontalmente
         HBox contentLayout = new HBox();
         contentLayout.setAlignment(Pos.CENTER);
-        contentLayout.setSpacing(50); // Espacio entre el protoboard y la batería
-
-        // Establecer un ancho fijo para el GridPane
-        protoboard.getGridPane().setPrefWidth(1000); // Ancho fijo deseado
-
-        // Añadir el GridPane y la batería al HBox
+        contentLayout.setSpacing(50);
+        protoboard.getGridPane().setPrefWidth(1000); 
         contentLayout.getChildren().addAll(protoboard.getGridPane(), bateria.getContenedorBateria());
-
-        // Añadir el HBox al VBox principal
         mainLayout.getChildren().add(contentLayout);
-
-        // Añadir el VBox al AnchorPane
         anchorPane.getChildren().addAll(mainLayout);
 
         // Establecer anclajes para que el AnchorPane se ajuste a la ventana
@@ -88,9 +78,9 @@ public class Main extends Application {
         // Configurar el Stage
         primaryStage.setTitle("Simulador de Protoboard");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(1000); // Establecer ancho mínimo de la ventana
-        primaryStage.setMinHeight(600); // Establecer altura mínima de la ventana
-        primaryStage.setResizable(true); // Permitir maximizar
+        primaryStage.setMinWidth(1000);
+        primaryStage.setMinHeight(600);
+        primaryStage.setResizable(true);
         primaryStage.show();
 
         hiloGestor.iniciarActualizacionContinua(protoboard.getMatriz());
@@ -105,10 +95,12 @@ public class Main extends Application {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 // Crear una pausa de 1 segundo
-                PauseTransition pause = new PauseTransition(Duration.millis(100));
-                pause.setOnFinished(event -> gestorcables.actualizar());
-
+                PauseTransition pause = new PauseTransition(Duration.millis(10));
                 // Iniciar la pausa
+                pause.setOnFinished(event -> {
+                    bateria.actualizar();
+                    gestorcables.actualizar();
+                });
                 pause.play();
             }
         });
