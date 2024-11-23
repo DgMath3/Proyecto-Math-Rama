@@ -682,7 +682,7 @@ public class GestorCables {
             // Crear las imágenes y el chip
             Image imagenChip = new Image("/resources/chip.png");
             Image imagenChip1 = new Image("/resources/chip1.png");
-            Chip nuevoChip = new Chip(fila, columna, fila + 1, columna + 6, largo, tipo);
+            Chip nuevoChip = new Chip(fila, columna, fila + 1, columna + largo -1, largo, tipo);
 
             // Colocar las imágenes en las filas 6 y 7 y guardar los ImageViews
             for (int i = 0; i < largo; i++) {
