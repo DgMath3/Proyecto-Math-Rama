@@ -209,71 +209,73 @@ public class HiloGestorCables {
 
 
     // Procesamiento de un chip NOT
-private void procesarChipNOT(Chip chip, String[][] matrizEnergia) {
-    int filaInicio = chip.getFilaInicio();
-    int columnaInicio = chip.getColumnaInicio();
-    int filaFin = chip.getFilaFin();
-    int columnaFin = chip.getColumnaFin();
+    private void procesarChipNOT(Chip chip, String[][] matrizEnergia) {
+        int filaInicio = chip.getFilaInicio();
+        int columnaInicio = chip.getColumnaInicio();
+        int filaFin = chip.getFilaFin();
+        int columnaFin = chip.getColumnaFin();
 
-    // Lógica: ambas entradas deben ser positivas o negativas para producir una salida
-    if (matrizEnergia[filaInicio][columnaInicio].equals("+") &&
-        matrizEnergia[filaFin][columnaFin].equals("-")) {
-        
-        // Revisión de la fila de inicio
-        for (int i = columnaInicio + 1; i < columnaFin; i++) {
-            // Si la celda actual es positiva y la celda anterior no tiene energía, pasa la energía
-            if (matrizEnergia[filaInicio][i].equals("+") && matrizEnergia[filaInicio][i - 1].equals("|")) { 
-                matrizEnergia[filaInicio][i + 1] = "|"; // Se coloca el estado de "sin energía"
-                protoboard.cambiarColor(filaInicio, i + 1, Color.LIGHTGRAY);
-                protoboard.actualizarMatriz(gridPane);
-                i = i + 1;
-            } 
-            // Si la celda actual es negativa y la celda anterior no tiene energía, pasa la energía
-            else if (matrizEnergia[filaInicio][i].equals("-") && matrizEnergia[filaInicio][i - 1].equals("|")) { 
-                matrizEnergia[filaFin][i + 1] = "|"; // Se coloca el estado de "sin energía"
-                protoboard.cambiarColor(filaInicio, i + 1, Color.LIGHTGRAY);
-                protoboard.actualizarMatriz(gridPane);
-                i = i + 1;
+        // Lógica: ambas entradas deben ser positivas o negativas para producir una salida
+        if (matrizEnergia[filaInicio][columnaInicio].equals("+") &&
+            matrizEnergia[filaFin][columnaFin].equals("-")) {
+            
+            // Revisión de la fila de inicio
+            for (int i = columnaInicio + 1; i < columnaFin; i++) {
+                // Si la celda actual es positiva y la celda anterior no tiene energía, pasa la energía
+                if (matrizEnergia[filaInicio][i].equals("+")) { 
+                    matrizEnergia[filaInicio][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    matrizEnergia[filaInicio-1][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    matrizEnergia[filaInicio-2][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    matrizEnergia[filaInicio-3][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    matrizEnergia[filaInicio-4][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    protoboard.cambiarColor(filaInicio, i + 1, Color.LIGHTGRAY);
+                    protoboard.cambiarColor(filaInicio-1, i + 1, Color.LIGHTGRAY);
+                    protoboard.cambiarColor(filaInicio-2, i + 1, Color.LIGHTGRAY);
+                    protoboard.cambiarColor(filaInicio-3, i + 1, Color.LIGHTGRAY);
+                    protoboard.cambiarColor(filaInicio-4, i + 1, Color.LIGHTGRAY);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 1;
+                } 
+                // Si la celda es neutra (|), pasa energía positiva
+                else if (matrizEnergia[filaInicio][i].equals("|")) {
+                    matrizEnergia[filaInicio][i + 1] = "+"; // Se pasa energía positiva
+                    protoboard.cambiarColor(filaInicio, i + 1, Color.BLUE);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 1;
+                }
             }
-            // Si la celda es neutra (|), pasa energía positiva
-            else if (matrizEnergia[filaInicio][i].equals("|")) {
-                matrizEnergia[filaInicio][i + 1] = "+"; // Se pasa energía positiva
-                protoboard.cambiarColor(filaInicio, i + 1, Color.BLUE);
-                protoboard.actualizarMatriz(gridPane);
-                i = i + 1;
+
+            // Revisión de la fila de fin
+            for (int i = columnaInicio; i < columnaFin; i++) {
+                // Si la celda es positiva y la celda anterior no tiene energía, pasa la energía
+                if (matrizEnergia[filaFin][i].equals("+") ) { 
+                    matrizEnergia[filaFin][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    matrizEnergia[filaFin+1][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    matrizEnergia[filaFin+2][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    matrizEnergia[filaFin+3][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    matrizEnergia[filaFin+4][i + 1] = "|"; // Se coloca el estado de "sin energía"
+                    protoboard.cambiarColor(filaFin, i + 1, Color.LIGHTGRAY);
+                    protoboard.cambiarColor(filaFin+1, i + 1, Color.LIGHTGRAY);
+                    protoboard.cambiarColor(filaFin+2, i + 1, Color.LIGHTGRAY);
+                    protoboard.cambiarColor(filaFin+3, i + 1, Color.LIGHTGRAY);
+                    protoboard.cambiarColor(filaFin+4, i + 1, Color.LIGHTGRAY);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 1;
+                }
+                // Si la celda es neutra (|), pasa energía positiva
+                else if (matrizEnergia[filaFin][i].equals("|")) {
+                    matrizEnergia[filaFin][i + 1] = "+"; // Se pasa energía positiva
+                    protoboard.cambiarColor(filaFin, i + 1, Color.BLUE);
+                    protoboard.actualizarMatriz(gridPane);
+                    i = i + 1;
+                }
             }
+
+            // Aplicar colores después de procesar
+            aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+            protoboard.actualizarMatriz(gridPane);
         }
-
-        // Revisión de la fila de fin
-        for (int i = columnaInicio; i < columnaFin; i++) {
-            // Si la celda es positiva y la celda anterior no tiene energía, pasa la energía
-            if (matrizEnergia[filaFin][i].equals("+") && matrizEnergia[filaFin][i - 1].equals("|")) { 
-                matrizEnergia[filaFin][i + 1] = "|"; // Se coloca el estado de "sin energía"
-                protoboard.cambiarColor(filaFin, i + 1, Color.LIGHTGRAY);
-                protoboard.actualizarMatriz(gridPane);
-                i = i + 1;
-            }
-            // Si la celda es negativa y la celda anterior no tiene energía, pasa la energía
-            else if (matrizEnergia[filaFin][i].equals("-") && matrizEnergia[filaFin][i - 1].equals("|")) { 
-                matrizEnergia[filaFin][i + 1] = "|"; // Se coloca el estado de "sin energía"
-                protoboard.cambiarColor(filaFin, i + 1, Color.LIGHTGRAY);
-                protoboard.actualizarMatriz(gridPane);
-                i = i + 1;
-            }
-            // Si la celda es neutra (|), pasa energía positiva
-            else if (matrizEnergia[filaFin][i].equals("|")) {
-                matrizEnergia[filaFin][i + 1] = "+"; // Se pasa energía positiva
-                protoboard.cambiarColor(filaFin, i + 1, Color.BLUE);
-                protoboard.actualizarMatriz(gridPane);
-                i = i + 1;
-            }
-        }
-
-        // Aplicar colores después de procesar
-        aplicarColoresProtoboard(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
-        protoboard.actualizarMatriz(gridPane);
     }
-}
 
 
 
