@@ -3,9 +3,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
+import javafx.application.Platform;
+import javafx.scene.shape.Line;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 public class HiloGestorCables {
 
@@ -63,6 +65,7 @@ public class HiloGestorCables {
     public void actualizarObjetos(String[][] matrizEnergia) {
         List<Cable> cables = gestorCables.obtenerCables();
         List<Chip> chips = gestorCables.obtenerChips();  // Obtener la lista de chips desde GestorCables
+        List<Display> displays = gestorCables.getDisplay(); // Obtener la lista de displays desde GestorCables
 
         if (cables.isEmpty() && chips.isEmpty()) {
             return; // No hacer nada si no hay cables ni chips
@@ -92,6 +95,17 @@ public class HiloGestorCables {
             });
         }
 
+        //Procesar displays
+        for (Display display : displays){
+            executor.submit(() -> {
+                try {
+                    procesarDisplay(display, matrizEnergia);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
         executor.shutdown();
         try {
             if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
@@ -102,6 +116,75 @@ public class HiloGestorCables {
             Thread.currentThread().interrupt();
         }
     }
+
+    // Método para procesar un display
+    private void procesarDisplay(Display display, String[][] matrizEnergia) {
+        int filaInicio = display.getfila();
+        int columnaInicio = display.getcolumna();
+        Line[] segmentos = display.getsegmentos();
+        Circle punto = display.getpunto();
+        
+
+        
+        if (matrizEnergia[filaInicio][columnaInicio+2].equals("+") && matrizEnergia[filaInicio+5][columnaInicio+2].equals("-")){
+
+            if(matrizEnergia[filaInicio][columnaInicio].equals("+")){
+                segmentos[6].setStroke(Color.RED);
+            }else if (matrizEnergia[filaInicio][columnaInicio].equals("|")){
+                segmentos[6].setStroke(Color.LIGHTGRAY);
+            }
+
+            if(matrizEnergia[filaInicio][columnaInicio+1].equals("+")){
+                segmentos[5].setStroke(Color.RED);
+            }else if (matrizEnergia[filaInicio][columnaInicio+1].equals("|")){
+                segmentos[5].setStroke(Color.LIGHTGRAY);
+            }
+
+            if(matrizEnergia[filaInicio][columnaInicio+3].equals("+")){
+                segmentos[0].setStroke(Color.RED);
+            }else if (matrizEnergia[filaInicio][columnaInicio+3].equals("|")){
+                segmentos[0].setStroke(Color.LIGHTGRAY);
+            }
+
+            if(matrizEnergia[filaInicio][columnaInicio+4].equals("+")){
+                segmentos[1].setStroke(Color.RED);
+            }
+            else if (matrizEnergia[filaInicio][columnaInicio+4].equals("|")){
+                segmentos[1].setStroke(Color.LIGHTGRAY);
+            }
+
+            if(matrizEnergia[filaInicio+5][columnaInicio].equals("+")){
+                segmentos[4].setStroke(Color.RED);
+            }else if (matrizEnergia[filaInicio+5][columnaInicio].equals("|")){
+                segmentos[4].setStroke(Color.LIGHTGRAY);
+            }
+
+            if(matrizEnergia[filaInicio+5][columnaInicio+1].equals("+")){
+                segmentos[3].setStroke(Color.RED);
+            }else if (matrizEnergia[filaInicio+5][columnaInicio+1].equals("|")){
+                segmentos[3].setStroke(Color.LIGHTGRAY);
+            }
+
+            if(matrizEnergia[filaInicio+5][columnaInicio+3].equals("+")){
+                segmentos[2].setStroke(Color.RED);
+            }
+            else if (matrizEnergia[filaInicio+5][columnaInicio+3].equals("|")){
+                segmentos[2].setStroke(Color.LIGHTGRAY);
+            }
+
+            if (matrizEnergia[filaInicio+5][columnaInicio+4].equals("+")){
+                punto.setFill(Color.RED);
+            }else if (matrizEnergia[filaInicio+5][columnaInicio+4].equals("|")){
+                punto.setFill(Color.LIGHTGRAY);
+            }
+    }else {
+        for (int i = 0; i < 7; i++){
+            segmentos[i].setStroke(Color.LIGHTGRAY);
+        }
+        punto.setFill(Color.LIGHTGRAY);
+    }
+}
+        
 
     // Método para procesar un chip
     private void procesarChip(Chip chip, String[][] matrizEnergia) {
@@ -134,6 +217,9 @@ public class HiloGestorCables {
             matrizEnergia[filaFin][columnaFin].equals("-")) {
             for (int i = columnaInicio + 1; i < columnaFin ; i = i + 3){
                 if (matrizEnergia[filaInicio][i].equals("+") && matrizEnergia[filaInicio][i + 1].equals("+")){
+                    if ((i+2)>columnaFin){
+                        break;
+                    }
                     matrizEnergia[filaInicio][i+2] = "+";
                     protoboard.cambiarColor(filaInicio, i+2, Color.BLUE);
                     protoboard.actualizarMatriz(gridPane);
@@ -148,6 +234,9 @@ public class HiloGestorCables {
             }
             for(int i = columnaInicio ; i < columnaFin - 1 ; i = i + 3){
                 if (matrizEnergia[filaFin][i].equals("+") && matrizEnergia[filaFin][i + 1].equals("+")){
+                    if ((i+3)>columnaFin){
+                        break;
+                    }
                     matrizEnergia[filaFin][i+2] = "+";
                     protoboard.cambiarColor(filaFin, i+2, Color.BLUE);
                     protoboard.actualizarMatriz(gridPane);
@@ -176,6 +265,9 @@ public class HiloGestorCables {
             matrizEnergia[filaFin][columnaFin].equals("-")) {
             for (int i = columnaInicio + 1; i < columnaFin ; i = i + 3){
                 if (matrizEnergia[filaInicio][i].equals("+") && matrizEnergia[filaInicio][i + 1].equals("|") || matrizEnergia[filaInicio][i].equals("|") && matrizEnergia[filaInicio][i + 1].equals("+")){
+                    if ((i+2)>columnaFin){
+                        break;
+                    }
                     matrizEnergia[filaInicio][i+2] = "+";
                     protoboard.cambiarColor(filaInicio, i+2, Color.BLUE);
                     protoboard.actualizarMatriz(gridPane);
@@ -190,6 +282,9 @@ public class HiloGestorCables {
             }
             for(int i = columnaInicio ; i < columnaFin - 1 ; i = i + 3){
                 if (matrizEnergia[filaFin][i].equals("+") && matrizEnergia[filaFin][i + 1].equals("|") || matrizEnergia[filaFin][i].equals("|") && matrizEnergia[filaFin][i + 1].equals("+")){
+                    if ((i+3)>columnaFin){
+                        break;
+                    }
                     matrizEnergia[filaFin][i+2] = "+";
                     protoboard.cambiarColor(filaFin, i+2, Color.BLUE);
                     protoboard.actualizarMatriz(gridPane);
@@ -246,7 +341,7 @@ public class HiloGestorCables {
             }
 
             // Revisión de la fila de fin
-            for (int i = columnaInicio; i < columnaFin; i++) {
+            for (int i = columnaInicio; i < columnaFin - 1; i++) {
                 // Si la celda es positiva y la celda anterior no tiene energía, pasa la energía
                 if (matrizEnergia[filaFin][i].equals("+") ) { 
                     matrizEnergia[filaFin][i + 1] = "|"; // Se coloca el estado de "sin energía"
@@ -289,8 +384,17 @@ public class HiloGestorCables {
         Objeto objeto = cable.getObjeto();
 
         // Verificación de cables
-        if (objeto.getpasa()) {
+        if (objeto.getpasa() && gestorCables.getestado()) {
             actualizarEnergia(filaInicio, columnaInicio, filaFin, columnaFin, matrizEnergia);
+        } if (objeto.getId().equals("Led")){
+            if (matrizEnergia[filaInicio][columnaInicio].equals("+") && matrizEnergia[filaFin][columnaFin].equals("-") ||
+         matrizEnergia[filaInicio][columnaInicio].equals("-") && matrizEnergia[filaFin][columnaFin].equals("+")){
+            Platform.runLater(() -> {
+                gestorCables.eliminarCable(cable, false);
+                gestorCables.redibujar(filaInicio, columnaInicio, filaFin, columnaFin, columnaInicio, 
+                    cable.getStartX(), cable.getStartX(), new Objeto("Led_on", cable.getColorled()));
+            });
+        }
         }
     }
 
