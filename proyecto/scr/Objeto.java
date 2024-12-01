@@ -34,7 +34,7 @@ public class Objeto {
         case "Led":
             imagen = cargarImagen("/resources/led_off.png");
             color = Color.DARKGRAY;
-            pasa = true;
+            pasa = false;
             largo = 3;
             break;
         case "Led_on":
@@ -56,13 +56,13 @@ public class Objeto {
                 break;
             }
             color = Color.DARKGRAY;
-            pasa = true;
+            pasa = false;
             largo = 3;
             break;
         case "led_roto":
             imagen = cargarImagen("/resources/ledroto.png");
             color = Color.DARKGRAY;
-            pasa = true;
+            pasa = false;
             largo = 3;
             break;
         case "Switch":
@@ -116,6 +116,12 @@ public class Objeto {
         case "Switch2":
             imagen = cargarImagen("/resources/nada.png");
             color = Color.GREEN;
+            pasa = true;
+            largo = 99;
+            break;
+        case "display":
+            imagen = cargarImagen("/resources/nada.png");
+            color = Color.DARKGRAY;
             pasa = true;
             largo = 99;
             break;

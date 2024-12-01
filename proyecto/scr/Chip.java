@@ -17,7 +17,7 @@ public class Chip {
         this.columnaFin = columnaFin;
         this.largo = largo;
         this.id = id; 
-        this.imageViews = new ImageView[17];
+        this.imageViews = new ImageView[99];
     }
 
     public String getId() {

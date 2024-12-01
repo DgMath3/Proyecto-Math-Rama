@@ -70,14 +70,11 @@ public class Bateria {
                 bateriaImagen.setImage(new Image("/resources/bateria.png")); // Imagen de batería encendida
                 gestorcables.setEnergia();
                 gestorcables.setEstado(bateriaEncendida); 
-                gestorcables.resetLed();
-                gestorcables.resetcablegen();
             } else {
                 bateriaImagen.setImage(new Image("/resources/bateriaOFF.png")); // Imagen de batería apagada
-                gestorcables.EliminarEnergia(protoboard.getMatriz());
                 gestorcables.setEstado(bateriaEncendida);
+                gestorcables.EliminarEnergia(protoboard.getMatriz());
                 gestorcables.resetLed();
-                gestorcables.resetcablegen();
             }
         });
     }

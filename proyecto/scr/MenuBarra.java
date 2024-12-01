@@ -43,7 +43,10 @@ public class MenuBarra {
         MenuItem chip3 = new MenuItem("Chip NOT");
         chip3.setOnAction(e -> chips("NOT"));
 
-        menuAgregar.getItems().addAll(cable_r, cable_b, led, siwtch, resistor, chip, chip2, chip3);
+        MenuItem display = new MenuItem("Display");
+        display.setOnAction(e -> seleccionarObjeto("Display", " "));
+
+        menuAgregar.getItems().addAll(cable_r, cable_b, led, siwtch, resistor, chip, chip2, chip3, display);
 
         menuBar.getMenus().add(menuAgregar);
     }
@@ -70,13 +73,14 @@ public class MenuBarra {
     private void chips(String Objeto) {
         while (true) {
             int valor = (int) GestorCables.solicitarValor("Chip " + Objeto, "seleccione el tamaño\n actual: ", 7);
-            if (valor > 2 && valor < 8) {
+            if (valor > 3 && valor < 31) {
                 cablear.setlargo(valor);
                 break;
             }
         }
         seleccionarObjeto(Objeto, "x");
     }
+
 
     private void seleccionarObjeto(String idObjeto, String led) {
 
@@ -96,4 +100,5 @@ public class MenuBarra {
     public MenuBar getMenuBar() {
         return menuBar;
     }
+
 }

@@ -4,10 +4,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
-import javafx.scene.shape.Line;
+
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 
 public class HiloGestorCables {
 
@@ -65,7 +64,6 @@ public class HiloGestorCables {
     public void actualizarObjetos(String[][] matrizEnergia) {
         List<Cable> cables = gestorCables.obtenerCables();
         List<Chip> chips = gestorCables.obtenerChips();  // Obtener la lista de chips desde GestorCables
-        List<Display> displays = gestorCables.getDisplay(); // Obtener la lista de displays desde GestorCables
 
         if (cables.isEmpty() && chips.isEmpty()) {
             return; // No hacer nada si no hay cables ni chips
@@ -95,17 +93,6 @@ public class HiloGestorCables {
             });
         }
 
-        //Procesar displays
-        for (Display display : displays){
-            executor.submit(() -> {
-                try {
-                    procesarDisplay(display, matrizEnergia);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        }
-
         executor.shutdown();
         try {
             if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
@@ -116,75 +103,6 @@ public class HiloGestorCables {
             Thread.currentThread().interrupt();
         }
     }
-
-    // Método para procesar un display
-    private void procesarDisplay(Display display, String[][] matrizEnergia) {
-        int filaInicio = display.getfila();
-        int columnaInicio = display.getcolumna();
-        Line[] segmentos = display.getsegmentos();
-        Circle punto = display.getpunto();
-        
-
-        
-        if (matrizEnergia[filaInicio][columnaInicio+2].equals("+") && matrizEnergia[filaInicio+5][columnaInicio+2].equals("-")){
-
-            if(matrizEnergia[filaInicio][columnaInicio].equals("+")){
-                segmentos[6].setStroke(Color.RED);
-            }else if (matrizEnergia[filaInicio][columnaInicio].equals("|")){
-                segmentos[6].setStroke(Color.LIGHTGRAY);
-            }
-
-            if(matrizEnergia[filaInicio][columnaInicio+1].equals("+")){
-                segmentos[5].setStroke(Color.RED);
-            }else if (matrizEnergia[filaInicio][columnaInicio+1].equals("|")){
-                segmentos[5].setStroke(Color.LIGHTGRAY);
-            }
-
-            if(matrizEnergia[filaInicio][columnaInicio+3].equals("+")){
-                segmentos[0].setStroke(Color.RED);
-            }else if (matrizEnergia[filaInicio][columnaInicio+3].equals("|")){
-                segmentos[0].setStroke(Color.LIGHTGRAY);
-            }
-
-            if(matrizEnergia[filaInicio][columnaInicio+4].equals("+")){
-                segmentos[1].setStroke(Color.RED);
-            }
-            else if (matrizEnergia[filaInicio][columnaInicio+4].equals("|")){
-                segmentos[1].setStroke(Color.LIGHTGRAY);
-            }
-
-            if(matrizEnergia[filaInicio+5][columnaInicio].equals("+")){
-                segmentos[4].setStroke(Color.RED);
-            }else if (matrizEnergia[filaInicio+5][columnaInicio].equals("|")){
-                segmentos[4].setStroke(Color.LIGHTGRAY);
-            }
-
-            if(matrizEnergia[filaInicio+5][columnaInicio+1].equals("+")){
-                segmentos[3].setStroke(Color.RED);
-            }else if (matrizEnergia[filaInicio+5][columnaInicio+1].equals("|")){
-                segmentos[3].setStroke(Color.LIGHTGRAY);
-            }
-
-            if(matrizEnergia[filaInicio+5][columnaInicio+3].equals("+")){
-                segmentos[2].setStroke(Color.RED);
-            }
-            else if (matrizEnergia[filaInicio+5][columnaInicio+3].equals("|")){
-                segmentos[2].setStroke(Color.LIGHTGRAY);
-            }
-
-            if (matrizEnergia[filaInicio+5][columnaInicio+4].equals("+")){
-                punto.setFill(Color.RED);
-            }else if (matrizEnergia[filaInicio+5][columnaInicio+4].equals("|")){
-                punto.setFill(Color.LIGHTGRAY);
-            }
-    }else {
-        for (int i = 0; i < 7; i++){
-            segmentos[i].setStroke(Color.LIGHTGRAY);
-        }
-        punto.setFill(Color.LIGHTGRAY);
-    }
-}
-        
 
     // Método para procesar un chip
     private void procesarChip(Chip chip, String[][] matrizEnergia) {

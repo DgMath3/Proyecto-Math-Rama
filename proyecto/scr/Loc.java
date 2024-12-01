@@ -137,4 +137,9 @@ public class Loc {
         // Si no se encontró el nodo, retorna null (puedes manejar esto según sea necesario)
         return null;
     }
+
+    public double[] ObtenerXeY(int fila, int columna){
+        Node nodo = obtenerNodoPorFilaColumna(fila, columna);
+        return getCoordenadasGridPane(nodo);
+    }
 }

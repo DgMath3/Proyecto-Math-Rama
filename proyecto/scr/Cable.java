@@ -10,12 +10,12 @@ public class Cable {
     private double endX;
     private double endY;
     private ImageView imageView;
-    private final Objeto objeto; // Nuevo atributo para asociar un objeto
+    private final Objeto objeto; 
     private boolean pasaEnergia;
-    private final int filaInicio; // Nueva variable para la fila de inicio
-    private final int columnaInicio; // Nueva variable para la columna de inicio
-    private final int filaFin; // Nueva variable para la fila de fin
-    private final int columnaFin; // Nueva variable para la columna de fin
+    private final int filaInicio;
+    private final int columnaInicio;
+    private final int filaFin;
+    private final int columnaFin;
     private final double valor;
     private final String color;
 
@@ -30,19 +30,15 @@ public class Cable {
         this.imageView = imageView;
         this.valor = valor;
         this.color = color_led;
-
-        this.objeto = objeto; // Inicializar el objeto
+        this.objeto = objeto;
         this.pasaEnergia = pasaEnergia;
-        
-        // Inicializa las filas y columnas
         this.filaInicio = filaInicio;
         this.columnaInicio = columnaInicio;
         this.filaFin = filaFin;
         this.columnaFin = columnaFin;
-
         this.linea.setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.SECONDARY) { // Detecta clic derecho
-                event.consume(); // Evita que el clic se propague
+            if (event.getButton() == MouseButton.SECONDARY) {
+                event.consume();
             }
         });
     }

@@ -6,9 +6,13 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.util.Duration;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +39,7 @@ public class GestorCables {
     private int largo;
     private double bateriax;
     private double bateriay;
+    private List<Display> Displays;
 
     public GestorCables(GridPane gridPane, Loc loc, Protoboard protoboard, Controlador controlador) {
         this.gridPane = gridPane;
@@ -48,6 +53,7 @@ public class GestorCables {
         inicializarMatrizConexiones();
         // Inicializar la lista de cables
         this.chips = new ArrayList<>();
+        this.Displays = new ArrayList<>();
 
         // Asegurarse de que el tamaño del Pane de dibujo sea correcto
         this.configurarEventos();
@@ -90,6 +96,7 @@ public class GestorCables {
     }
 
     private void clicpresionado(MouseEvent event) {
+
         if (!cablearActivo || objetoSeleccionado == null) {
             return; // Si no está activo o no hay objeto seleccionado, no hace nada
         }
@@ -102,7 +109,8 @@ public class GestorCables {
         String objetoId = objetoSeleccionado.getId();
 
         // Verificar si el objeto seleccionado no es un chip o switch especial
-        if (!objetoId.equals("chip") && !objetoId.equals("AND") && !objetoId.equals("OR") && !objetoId.equals("NOT")) {
+        if (!objetoId.equals("chip") && !objetoId.equals("AND") && !objetoId.equals("OR") && !objetoId.equals("NOT")
+                && !objetoId.equals("Display")) {
             // Esperar brevemente para asegurar que el GridPane se actualice
             PauseTransition pause = new PauseTransition(Duration.millis(50));
             pause.setOnFinished(e -> {
@@ -156,6 +164,14 @@ public class GestorCables {
             cablearActivo = false;
             objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
 
+        } else if (objetoId.equals("Display")) {
+            double clickX = event.getX();
+            double clickY = event.getY();
+            int[] cl = loc.getfilaccoluma(clickX, clickY);
+            colocarDisplay(cl[0], cl[1]);
+            drawing = false;
+            cablearActivo = false;
+            objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
         }
     }
 
@@ -240,7 +256,8 @@ public class GestorCables {
             return false;
         }
 
-        if (matrizConexiones[filaFin][columnaFin] == 1) {
+        if (matrizConexiones[filaFin][columnaFin] == 1 && (!objetoSeleccionado.getId().equals("cablegen+")
+                && !objetoSeleccionado.getId().equals("cablegen-"))) {
             alerta("hay un objeto #002");
             return false;
         }
@@ -291,6 +308,10 @@ public class GestorCables {
         double deltaX = fin[0] - inicio[0];
         double deltaY = fin[1] - inicio[1];
         double angle = Math.toDegrees(Math.atan2(deltaY, deltaX));
+
+        if (objetoSeleccionado.getId().equals("Switch") || objetoSeleccionado.getId().equals("SwitchOn")) {
+            angle = angle + 90;
+        }
 
         // Establecer la rotación de la imagen
         imageView.setRotate(angle);
@@ -351,6 +372,9 @@ public class GestorCables {
         double deltaX = fin[0] - inicio[0];
         double deltaY = fin[1] - inicio[1];
         double angle = Math.toDegrees(Math.atan2(deltaY, deltaX));
+        if (objeto.getId().equals("Switch") || objeto.getId().equals("SwitchOn")) {
+            angle = angle + 90;
+        }
 
         // Establecer la rotación de la imagen
         imageView.setRotate(angle);
@@ -397,12 +421,11 @@ public class GestorCables {
                 }
             }
             if (cableToRemove != null) {
-                eliminarCable(cableToRemove, false);
+                eliminarCable(cableToRemove, true);
                 resetLed();
                 resetcablegen();
-                eliminarEnergiaConRetraso(protoboard.getMatriz(), 100);
-                setEnergia();
-                event.consume(); // Evita que el evento se propague
+                eliminarEnergiaConRetraso(protoboard.getMatriz(), 150);
+                event.consume();
             }
             Chip chipToRemove = null;
             for (Chip chip : chips) {
@@ -426,11 +449,12 @@ public class GestorCables {
                     break;
                 }
             }
-
             if (chipToRemove != null) {
+                eliminarEnergiaConRetraso(protoboard.getMatriz(), 150);
                 eliminarChip(chipToRemove);
                 event.consume(); // Evita que el evento se propague
             }
+            borrarDisplay(event);
         } else if (event.getButton() == MouseButton.PRIMARY && cablearActivo && objetoSeleccionado != null) {
             Cable cableToChange = null;
             for (Cable cable : cables) {
@@ -457,25 +481,20 @@ public class GestorCables {
                 if (cableCambiado.getObjeto().getId().equals("Switch")) {
                     cambiarCable(cableCambiado, new Objeto("SwitchOn", "x"));
                     eliminarCable(cableCambiado, false);
+                    setEnergia();
+                    resetLed();
                 } else if (cableCambiado.getObjeto().getId().equals("SwitchOn")) {
-                    cables.remove(cableCambiado);
                     cambiarCable(cableCambiado, new Objeto("Switch", "x"));
-                    event.consume();
-                    eliminarEnergiaConRetraso(protoboard.getMatriz(), 50);
                     eliminarEnergiaConRetraso(protoboard.getMatriz(), 100);
-                    eliminarEnergiaConRetraso(protoboard.getMatriz(), 150);
-                    eliminarEnergiaConRetraso(protoboard.getMatriz(), 200);
+                    resetLed();
                 } else if (cableCambiado.getObjeto().getId().equals("resistor")) {
                     double valor = solicitarValor("Configuracion resistor", "valor actual: ", cableCambiado.getvalor());
                     redibujar(cableCambiado.getFilaInicio(), cableCambiado.getColumnaInicio(),
                             cableCambiado.getFilaFin(), cableCambiado.getColumnaFin(), 0, 0, valor,
                             new Objeto("resistor", "x"));
                     eliminarCable(cableCambiado, false);
-                    event.consume();
-
                 }
-
-                event.consume(); // Evita que el evento se propague
+                event.consume();
             }
         }
 
@@ -485,8 +504,6 @@ public class GestorCables {
         new Thread(() -> {
             try {
                 Thread.sleep(delayMilisegundos);
-                EliminarEnergia(matrizEnergia);
-                EliminarEnergia(matrizEnergia);
                 EliminarEnergia(matrizEnergia);
                 setEnergia();
             } catch (InterruptedException e) {
@@ -523,14 +540,11 @@ public class GestorCables {
     }
 
     private void cambiarCable(Cable cable, Objeto objeto) {
-
-        // Eliminar el cable actual
-        eliminarCable(cable, false);
         redibujar(cable.getFilaInicio(), cable.getColumnaInicio(), cable.getFilaFin(), cable.getColumnaFin(),
                 cable.getStartX(), cable.getStartY(), cable.getvalor(), objeto);
 
-        EliminarEnergia(protoboard.getMatriz());
-        setEnergia();
+        // Eliminar el cable actual
+        eliminarCable(cable, false);
         cablearActivo = false; // Desactiva la funcionalidad de cablear después de cambiar
         objetoSeleccionado = null; // Limpiar la selección del objeto después de usarlo
     }
@@ -582,6 +596,10 @@ public class GestorCables {
 
     public List<Chip> obtenerChips() {
         return chips;
+    }
+
+    public List<Display> getDisplay() {
+        return Displays;
     }
 
     // Método para obtener un cable en una posición específica (fila, columna)
@@ -682,7 +700,7 @@ public class GestorCables {
             // Crear las imágenes y el chip
             Image imagenChip = new Image("/resources/chip.png");
             Image imagenChip1 = new Image("/resources/chip1.png");
-            Chip nuevoChip = new Chip(fila, columna, fila + 1, columna + largo -1, largo, tipo);
+            Chip nuevoChip = new Chip(fila, columna, fila + 1, columna + largo - 1, largo, tipo);
 
             // Colocar las imágenes en las filas 6 y 7 y guardar los ImageViews
             for (int i = 0; i < largo; i++) {
@@ -726,10 +744,8 @@ public class GestorCables {
     public void EliminarEnergia(String[][] matrizEnergia) {
         for (int i = 0; i < matrizEnergia.length; i++) {
             for (int j = 0; j < matrizEnergia[i].length; j++) {
-                if (matrizEnergia[i][j].equals("+") || matrizEnergia[i][j].equals("-")) {
-                    matrizEnergia[i][j] = "|";
-                    protoboard.cambiarColor(i, j, Color.LIGHTGRAY);
-                }
+                matrizEnergia[i][j] = "|";
+                protoboard.cambiarColor(i, j, Color.LIGHTGRAY);
             }
         }
         controlador.actualizarBuses(gridPane);
@@ -737,7 +753,7 @@ public class GestorCables {
     }
 
     public void setEnergia() {
-        for (Cable cable : cables) {
+        for (Cable cable : obtenerCables()) {
             if (cable.getObjeto().getId().equals("cablegen+")) {
                 protoboard.cambiarColor(cable.getFilaInicio(), cable.getColumnaInicio(), Color.BLUE);
             } else if (cable.getObjeto().getId().equals("cablegen-")) {
@@ -754,5 +770,83 @@ public class GestorCables {
 
     public boolean getestado() {
         return estado;
+    }
+
+    private void colocarDisplay(int Fila, int Columna) {
+        double[] XeY = loc.ObtenerXeY(Fila, Columna);
+        double x = XeY[0] - 5;
+        double y = XeY[1];
+        double[] XeY2 = loc.ObtenerXeY(Fila, Columna + 4);
+        double x2 = XeY2[0] + 5;
+        double[] XeY3 = loc.ObtenerXeY(Fila + 5, Columna);
+        double y2 = XeY3[1];
+
+        // Crear el rectángulo principal del display
+        Rectangle rectangulo = new Rectangle(x2 - x, y2 - y);
+        rectangulo.setFill(Color.BLACK);
+        rectangulo.setStroke(Color.GRAY);
+        rectangulo.setArcWidth(15);
+        rectangulo.setArcHeight(15);
+        rectangulo.setTranslateX(x);
+        rectangulo.setTranslateY(y);
+        
+        // Calcular posiciones intermedias para los segmentos
+        double anchoSegmento = 6; // Ancho del segmento
+        double margen = 15; // Margen interno de los segmentos
+        double yCentro = (y + y2) / 2; // Centro vertical del display
+
+        // Crear los segmentos del display
+        Line[] segmentos = new Line[7];
+        segmentos[0] = crearSegmento(x + margen, y + margen, x2 - margen - 5, y + margen); // Superior
+        segmentos[1] = crearSegmento(x2 - margen - 5, y + margen + 10, x2 - margen - 5, yCentro - margen); // Derecha
+        segmentos[2] = crearSegmento(x2 - margen- 5, yCentro + margen, x2 - margen -5 , y2 - margen - 10); // Derecha inferior
+        segmentos[3] = crearSegmento(x + margen, y2 - margen, x2 - margen - 5, y2 - margen); // Inferior
+        segmentos[4] = crearSegmento(x + margen, yCentro + margen, x + margen, y2 - margen - 10); // Izquierda inferior
+        segmentos[5] = crearSegmento(x + margen, y + margen  + 10, x + margen, yCentro - margen); // Izquierda
+        segmentos[6] = crearSegmento(x + margen, yCentro, x2 - margen - 5, yCentro); // Central
+
+        for (Line segmento : segmentos) {
+            segmento.setStroke(Color.LIGHTGRAY);
+            segmento.setStrokeWidth(anchoSegmento);
+        }
+
+        // Crear el punto decimal en la esquina inferior derecha
+        Circle punto = new Circle(x2 - margen + 7,y2- margen, 6);
+        punto.setFill(Color.LIGHTGRAY);
+
+        drawingPane.getChildren().add(rectangulo);
+        drawingPane.getChildren().add(punto);
+        drawingPane.getChildren().addAll(segmentos);
+
+        Display display2 = new Display(Fila, Columna, segmentos, punto, rectangulo);
+        Displays.add(display2);
+    }
+
+    private Line crearSegmento(double startX, double startY, double endX, double endY) {
+        return new Line(startX, startY, endX, endY);
+    }
+
+    private void borrarDisplay(MouseEvent event) {
+        double mouseX = event.getX();
+        double mouseY = event.getY();
+
+        // Recorrer la lista de displays
+        for (int i = 0; i < Displays.size(); i++) {
+            Display display = Displays.get(i);
+            Rectangle rect = display.getrectangulo(); // Obtener el rectángulo del Display
+
+            // Verificar si el clic está dentro del rectángulo
+            if (rect.getBoundsInParent().contains(mouseX, mouseY)) {
+                // Remover nodos del contenedor gráfico
+                Pane parent = (Pane) rect.getParent();
+                parent.getChildren().remove(rect);
+                parent.getChildren().removeAll(display.getsegmentos());
+                parent.getChildren().remove(display.getpunto());
+
+                // Eliminar el Display de la lista
+                Displays.remove(i);
+                break; // Salir después de encontrar y eliminar el Display
+            }
+        }
     }
 }
